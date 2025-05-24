@@ -1,1 +1,12 @@
-body { font-family: sans-serif; }
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
+h1 {
+  color: #007BFF;
+}
+.menu a {
+  display: block;
+  margin: 10px 0;
+  color: #5b1bd8;
+}
