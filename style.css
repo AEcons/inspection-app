@@ -1,12 +1,22 @@
 body {
   font-family: sans-serif;
-  padding: 20px;
+  padding: 15px;
+  max-width: 100%;
 }
-h1 {
-  color: #007BFF;
+input, textarea, button {
+  width: 100%;
+  max-width: 400px;
+  font-size: 1em;
+  margin-bottom: 10px;
+  padding: 8px;
 }
-.menu a {
+button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+}
+a {
+  color: purple;
   display: block;
-  margin: 10px 0;
-  color: #5b1bd8;
+  margin-top: 10px;
 }
