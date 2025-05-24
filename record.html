@@ -4,19 +4,41 @@
   <meta charset="UTF-8">
   <title>หน้าบันทึก</title>
   <link rel="stylesheet" href="style.css">
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const form = document.getElementById("recordForm");
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        const data = JSON.parse(localStorage.getItem("inspectionData") || "[]");
+
+        const item = {
+          project: form.project.value,
+          plot: form.plot.value,
+          foreman: form.foreman.value,
+          date1: form.date1.value,
+          date2: form.date2.value,
+          detail: form.detail.value,
+          note: form.note.value
+        };
+
+        data.push(item);
+        localStorage.setItem("inspectionData", JSON.stringify(data));
+        alert("บันทึกข้อมูลเรียบร้อยแล้ว");
+        form.reset();
+      });
+    });
+  </script>
 </head>
 <body>
   <h1>หน้าบันทึก</h1>
   <form id="recordForm">
-    <input type="text" placeholder="ชื่อโครงการ"><br>
-    <input type="text" placeholder="เลขแปลง"><br>
-    <input type="text" placeholder="ชื่อโฟร์แมน"><br>
-    <input type="date"><br>
-    <input type="date"><br>
-    <textarea placeholder="รายละเอียดงาน"></textarea><br>
-    <input type="file" accept="image/*"><br>
-    <input type="file" accept="image/*"><br>
-    <textarea placeholder="หมายเหตุ"></textarea><br>
+    <input type="text" name="project" placeholder="ชื่อโครงการ" required><br>
+    <input type="text" name="plot" placeholder="เลขแปลง" required><br>
+    <input type="text" name="foreman" placeholder="ชื่อโฟร์แมน"><br>
+    <input type="date" name="date1"><br>
+    <input type="date" name="date2"><br>
+    <textarea name="detail" placeholder="รายละเอียดงาน"></textarea><br>
+    <textarea name="note" placeholder="หมายเหตุ"></textarea><br>
     <button type="submit">บันทึก</button>
   </form>
   <a href="index.html">กลับหน้าหลัก</a>
