@@ -4,11 +4,36 @@
   <meta charset="UTF-8">
   <title>หน้ารายละเอียด</title>
   <link rel="stylesheet" href="style.css">
-  <script src="print.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const index = localStorage.getItem("selectedInspectionIndex");
+      const data = JSON.parse(localStorage.getItem("inspectionData") || "[]");
+
+      if (!index || !data[index]) {
+        document.getElementById("detailContainer").innerHTML = "<p>ไม่พบข้อมูล</p>";
+        return;
+      }
+
+      const item = data[index];
+      document.getElementById("detailContainer").innerHTML = `
+        <h2>${item.project}</h2>
+        <p><strong>แปลง:</strong> ${item.plot}</p>
+        <p><strong>โฟร์แมน:</strong> ${item.foreman}</p>
+        <p><strong>วันที่ตรวจ 1:</strong> ${item.date1}</p>
+        <p><strong>วันที่ตรวจ 2:</strong> ${item.date2}</p>
+        <p><strong>รายละเอียด:</strong> ${item.detail}</p>
+        <p><strong>หมายเหตุ:</strong> ${item.note}</p>
+      `;
+    });
+
+    function printDetail() {
+      window.print();
+    }
+  </script>
 </head>
 <body>
   <h1>หน้ารายละเอียด</h1>
-  <p>แสดงข้อมูลละเอียดของงานที่เลือก</p>
+  <div id="detailContainer"></div>
   <button onclick="printDetail()">พิมพ์รายการ</button><br>
   <a href="index.html">กลับหน้าหลัก</a>
 </body>
