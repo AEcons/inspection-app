@@ -2,40 +2,36 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>หน้ารายละเอียด</title>
-  <link rel="stylesheet" href="style.css">
-  <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      const index = localStorage.getItem("selectedInspectionIndex");
-      const data = JSON.parse(localStorage.getItem("inspectionData") || "[]");
-
-      if (!index || !data[index]) {
-        document.getElementById("detailContainer").innerHTML = "<p>ไม่พบข้อมูล</p>";
-        return;
-      }
-
-      const item = data[index];
-      document.getElementById("detailContainer").innerHTML = `
-        <h2>${item.project}</h2>
-        <p><strong>แปลง:</strong> ${item.plot}</p>
-        <p><strong>โฟร์แมน:</strong> ${item.foreman}</p>
-        <p><strong>วันที่ตรวจ 1:</strong> ${item.date1}</p>
-        <p><strong>วันที่ตรวจ 2:</strong> ${item.date2}</p>
-        <p><strong>รายละเอียด:</strong> ${item.detail}</p>
-        <p><strong>หมายเหตุ:</strong> ${item.note}</p>
-      `;
-    });
-
-    function printDetail() {
-      window.print();
-    }
-  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>แสดงรายละเอียด</title>
+  <style>
+    body { font-family: sans-serif; padding: 10px; max-width: 700px; margin: auto; }
+    img { max-width: 100%; margin: 10px 0; }
+    .footer { display: flex; justify-content: space-between; margin-top: 50px; }
+  </style>
 </head>
 <body>
-  <h1>หน้ารายละเอียด</h1>
-  <div id="detailContainer"></div>
-  <button onclick="printDetail()">พิมพ์รายการ</button><br>
-  <a href="index.html">กลับหน้าหลัก</a>
+  <h2>แสดงรายละเอียด</h2>
+  <div id="details"></div>
+  <div class="footer">
+    <div>ผู้ควบคุมงาน</div>
+    <div>ผู้อนุมัติ</div>
+  </div>
+  <script>
+    const project = sessionStorage.getItem('project');
+    const plot = sessionStorage.getItem('plot');
+    const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+    const filtered = data.filter(d => d.project === project && d.plot === plot);
+    const detail = filtered[filtered.length - 1];
+    document.getElementById('details').innerHTML = `
+      <p>โครงการ: ${detail.project}</p>
+      <p>เลขแปลง: ${detail.plot}</p>
+      <p>วันที่เริ่ม: ${detail.start}</p>
+      <p>วันที่เสร็จ: ${detail.end}</p>
+      <p>สถานะบ้าน: ${detail.status}</p>
+      <p>รูปก่อนแก้ไข:</p><img src="${detail.beforeImg}" />
+      <p>รูปหลังแก้ไข:</p><img src="${detail.afterImg}" />
+    `;
+  </script>
 </body>
 </html>
