@@ -1,22 +1,10 @@
 body {
-  font-family: sans-serif;
-  padding: 15px;
-  max-width: 100%;
+  font-family: 'Sarabun', sans-serif;
+  padding: 20px;
 }
-input, textarea, button {
+input, button {
+  margin: 5px 0;
+  display: block;
   width: 100%;
   max-width: 400px;
-  font-size: 1em;
-  margin-bottom: 10px;
-  padding: 8px;
-}
-button {
-  background-color: #007BFF;
-  color: white;
-  border: none;
-}
-a {
-  color: purple;
-  display: block;
-  margin-top: 10px;
 }
