@@ -2,14 +2,81 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>รายงาน</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body { font-family: sans-serif; padding: 10px; max-width: 700px; margin: auto; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    .green { background-color: #d4edda; }
+    .yellow { background-color: #fff3cd; }
+    select, button { width: 100%; margin: 5px 0; padding: 10px; }
+  </style>
 </head>
 <body>
-  <h1>รายงาน</h1>
-  <div id="reportArea"></div>
-  <button onclick="window.location.href='index.html'">กลับสู่เมนูหลัก</button>
-  <script src="script.js"></script>
+
+  <h2>รายงาน</h2>
+  <select id="projectSelect"><option value="">เลือกโครงการ</option></select>
+  <select id="plotSelect"><option value="">เลือกเลขแปลง</option></select>
+
+  <table>
+    <thead><tr><th>เลขแปลง</th><th>จำนวนรายการ</th><th>แสดงรายละเอียด</th></tr></thead>
+    <tbody id="reportBody"></tbody>
+  </table>
+
+  <button onclick="location.href='index.html'">กลับเมนูหลัก</button>
+  <button onclick="window.print()">พิมพ์</button>
+
+  <script>
+    const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+    const projects = [...new Set(data.map(item => item.project))];
+    const projectSelect = document.getElementById('projectSelect');
+    const plotSelect = document.getElementById('plotSelect');
+    const reportBody = document.getElementById('reportBody');
+
+    projects.forEach(proj => {
+      const opt = document.createElement('option');
+      opt.value = proj;
+      opt.textContent = proj;
+      projectSelect.appendChild(opt);
+    });
+
+    projectSelect.addEventListener('change', () => {
+      const selectedProject = projectSelect.value;
+      const plots = [...new Set(data.filter(d => d.project === selectedProject).map(d => d.plot))];
+      plotSelect.innerHTML = '<option value="">เลือกเลขแปลง</option>';
+      plots.forEach(p => {
+        const opt = document.createElement('option');
+        opt.value = p;
+        opt.textContent = p;
+        plotSelect.appendChild(opt);
+      });
+      renderTable(selectedProject);
+    });
+
+    function renderTable(project) {
+      const filtered = data.filter(d => d.project === project);
+      const grouped = {};
+      filtered.forEach(d => {
+        if (!grouped[d.plot]) grouped[d.plot] = [];
+        grouped[d.plot].push(d);
+      });
+      reportBody.innerHTML = '';
+      for (const plot in grouped) {
+        const status = grouped[plot][grouped[plot].length - 1].status;
+        const colorClass = status === 'QC pass' ? 'yellow' : status === 'ลูกค้ารับมอบ' ? 'green' : '';
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td class="${colorClass}">${plot}</td><td>${grouped[plot].length}</td>
+          <td><button onclick="showDetail('${project}','${plot}')">ดู</button></td>`;
+        reportBody.appendChild(tr);
+      }
+    }
+
+    function showDetail(project, plot) {
+      sessionStorage.setItem('project', project);
+      sessionStorage.setItem('plot', plot);
+      location.href = 'detail.html';
+    }
+  </script>
 </body>
 </html>
