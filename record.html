@@ -2,22 +2,60 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>หน้าบันทึก</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>บันทึกรายการ</title>
+  <style>
+    body { font-family: sans-serif; padding: 10px; max-width: 600px; margin: auto; }
+    input, select, button { display: block; margin: 10px 0; padding: 10px; width: 100%; box-sizing: border-box; }
+    img { max-width: 100%; margin: 10px 0; }
+  </style>
 </head>
 <body>
-  <h1>หน้าบันทึก</h1>
-  <form id="recordForm">
-    <label>ชื่อโครงการ: <input type="text" name="project"></label><br>
-    <label>เลขแปลง: <input type="text" name="plot"></label><br>
-    <label>ชื่อโฟร์แมน: <input type="text" name="foreman"></label><br>
-    <label>วันที่ตรวจ 1: <input type="date" name="date1"></label><br>
-    <label>วันที่ตรวจ 2: <input type="date" name="date2"></label><br>
-    <div id="items"></div>
-    <button type="button" onclick="addItem()">เพิ่มรายการ</button>
-    <button type="submit">บันทึกทั้งหมด</button>
-  </form>
-  <script src="script.js"></script>
+  <h2>บันทึกรายการ</h2>
+  <input type="text" id="project" placeholder="โครงการ">
+  <input type="text" id="plot" placeholder="เลขแปลง">
+  <input type="date" id="startDate" placeholder="วันที่เริ่ม">
+  <input type="date" id="endDate" placeholder="วันที่เสร็จ">
+
+  <label>รูปก่อนแก้ไข:</label>
+  <input type="file" accept="image/*" onchange="previewImage(this, 'beforeImg')"/>
+  <img id="beforeImg" />
+
+  <label>รูปหลังแก้ไข:</label>
+  <input type="file" accept="image/*" onchange="previewImage(this, 'afterImg')"/>
+  <img id="afterImg" />
+
+  <label>สถานะบ้าน:</label>
+  <select id="status">
+    <option value="ระหว่างแก้ไข">ระหว่างแก้ไข</option>
+    <option value="QC pass">QC pass</option>
+    <option value="ลูกค้ารับมอบ">ลูกค้ารับมอบ</option>
+  </select>
+
+  <button onclick="addEntry()">ยืนยันรายการ</button>
+  <button onclick="location.reload()">เพิ่มรายการ</button>
+
+  <script>
+    function previewImage(input, imgId) {
+      const reader = new FileReader();
+      reader.onload = e => document.getElementById(imgId).src = e.target.result;
+      reader.readAsDataURL(input.files[0]);
+    }
+
+    function addEntry() {
+      const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+      data.push({
+        project: document.getElementById('project').value,
+        plot: document.getElementById('plot').value,
+        start: document.getElementById('startDate').value,
+        end: document.getElementById('endDate').value,
+        status: document.getElementById('status').value,
+        beforeImg: document.getElementById('beforeImg').src,
+        afterImg: document.getElementById('afterImg').src
+      });
+      localStorage.setItem('inspectionData', JSON.stringify(data));
+      alert("บันทึกรายการเรียบร้อยแล้ว");
+    }
+  </script>
 </body>
 </html>
