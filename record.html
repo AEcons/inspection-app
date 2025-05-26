@@ -1,23 +1,23 @@
 <!DOCTYPE html>
-<html>
+<html lang="th">
 <head>
-  <meta charset='UTF-8'>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>หน้าบันทึก</title>
-  <link rel='stylesheet' href='style.css'>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <h1>หน้าบันทึก</h1>
-  <form id='recordForm'>
-    <input type='text' placeholder='ชื่อโครงการ'><br>
-    <input type='text' placeholder='เลขแปลง'><br>
-    <input type='text' placeholder='ชื่อโฟร์แมน'><br>
-    <input type='date'><br>
-    <input type='date'><br>
-    <textarea placeholder='รายละเอียดงาน'></textarea><br>
-    <input type='file'><br>
-    <input type='file'><br>
-    <textarea placeholder='หมายเหตุ'></textarea><br>
-    <button type='submit'>บันทึก</button>
+  <form id="recordForm">
+    <label>ชื่อโครงการ: <input type="text" name="project"></label><br>
+    <label>เลขแปลง: <input type="text" name="plot"></label><br>
+    <label>ชื่อโฟร์แมน: <input type="text" name="foreman"></label><br>
+    <label>วันที่ตรวจ 1: <input type="date" name="date1"></label><br>
+    <label>วันที่ตรวจ 2: <input type="date" name="date2"></label><br>
+    <div id="items"></div>
+    <button type="button" onclick="addItem()">เพิ่มรายการ</button>
+    <button type="submit">บันทึกทั้งหมด</button>
   </form>
+  <script src="script.js"></script>
 </body>
 </html>
