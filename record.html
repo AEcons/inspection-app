@@ -32,8 +32,12 @@
     <option value="ลูกค้ารับมอบ">ลูกค้ารับมอบ</option>
   </select>
 
+  
   <button onclick="addEntry()">ยืนยันรายการ</button>
+  <p id="message" style="color: green; font-weight: bold;"></p>
+    
   <button onclick="location.reload()">เพิ่มรายการ</button>
+  <button onclick="location.href='index.html'">กลับสู่หน้าหลัก</button>
 
   <script>
     function previewImage(input, imgId) {
@@ -42,7 +46,16 @@
       reader.readAsDataURL(input.files[0]);
     }
 
+    
     function addEntry() {
+      const project = document.getElementById('project').value;
+      const plot = document.getElementById('plot').value;
+      if (!project || !plot) {
+        document.getElementById('message').style.color = 'red';
+        document.getElementById('message').innerText = "ยืนยันรายการไม่สำเร็จ: กรุณากรอกโครงการและเลขแปลง";
+        return;
+      }
+    
       const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
       data.push({
         project: document.getElementById('project').value,
@@ -54,7 +67,8 @@
         afterImg: document.getElementById('afterImg').src
       });
       localStorage.setItem('inspectionData', JSON.stringify(data));
-      alert("บันทึกรายการเรียบร้อยแล้ว");
+      document.getElementById("message").style.color = "green";
+      document.getElementById("message").innerText = "ยืนยันรายการสำเร็จ";
     }
   </script>
 </body>
