@@ -57,7 +57,13 @@
         opt.textContent = p;
         plotSelect.appendChild(opt);
       });
-      renderTable(selectedProject);
+      
+      if (selectedProject) {
+        renderTable(selectedProject);
+      } else {
+        reportBody.innerHTML = '';
+      }
+    
     });
 
     function renderTable(project) {
