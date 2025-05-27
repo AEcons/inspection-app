@@ -49,7 +49,8 @@ function saveEntry() {
     message.innerText = "กรุณากรอกข้อมูลให้ครบถ้วน"; message.style.color = "red"; return;
   }
   const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
-  data.push({
+  const user = sessionStorage.getItem('username');
+  data.push({ user,
     project: p, plot: pl, start: s, end: endDate.value, description: d,
     status: status.value, beforeImg: beforeImg.src, afterImg: afterImg.src
   });
@@ -58,6 +59,7 @@ function saveEntry() {
 }
 function loadEntry() {
   const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+  const user = sessionStorage.getItem('username');
   const p = project.value.trim(), pl = plot.value.trim();
   const found = data.find(d => d.project === p && d.plot === pl);
   if (!found) { message.innerText = "ไม่พบข้อมูลเดิม"; message.style.color = "red"; return; }
@@ -67,6 +69,7 @@ function loadEntry() {
 }
 window.onload = () => {
   const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+  const user = sessionStorage.getItem('username');
   const ps = [...new Set(data.map(d => d.project))];
   const pls = [...new Set(data.map(d => d.plot))];
   projectList.innerHTML = ps.map(p => `<option value="${p}">`).join('');

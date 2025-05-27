@@ -27,7 +27,7 @@
   <button onclick="location.href='index.html'">กลับเมนูหลัก</button>
   <button onclick="window.print()">พิมพ์หน้านี้</button>
 <script>
-const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+const data = JSON.parse(localStorage.getItem('inspectionData') || '[]').filter(d => d.user === sessionStorage.getItem('username'));
 const projectSet = [...new Set(data.map(d => d.project))];
 projectSet.forEach(p => {
   const opt = document.createElement("option");
