@@ -6,15 +6,17 @@
   <title>แสดงรายละเอียด</title>
   <style>
     body { font-family: sans-serif; padding: 10px; max-width: 700px; margin: auto; }
+    img.logo { width: 120px; display: block; margin: 0 auto 10px; }
     img { max-width: 100%; margin: 10px 0; }
     .footer { display: flex; justify-content: space-between; margin-top: 50px; }
     @media print {
-      button { display: none; }
+      button {{ display: none; }}
     }
   </style>
 </head>
 <body>
-  <h2>แสดงรายละเอียด</h2>
+  <img src="logo.png" alt="AE Logo" class="logo">
+  <h2 style="text-align:center;">แสดงรายละเอียด</h2>
   <div id="details"></div>
   <div class="footer">
     <div>ผู้ควบคุมงาน</div>
@@ -33,6 +35,7 @@
       <p>วันที่เริ่ม: ${detail.start}</p>
       <p>วันที่เสร็จ: ${detail.end}</p>
       <p>สถานะบ้าน: ${detail.status}</p>
+      <p>รายละเอียด: ${detail.description}</p>
       <p>รูปก่อนแก้ไข:</p><img src="${detail.beforeImg}" />
       <p>รูปหลังแก้ไข:</p><img src="${detail.afterImg}" />
     `;
