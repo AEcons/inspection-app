@@ -60,7 +60,7 @@
       const afterImg = document.getElementById('afterImg').src;
       const messageEl = document.getElementById('message');
 
-      if (!project || !plot || !start || !end || !status || !beforeImg || beforeImg === window.location.href) {
+      if (!project || !plot || !start || !description) {
         messageEl.style.color = 'red';
         messageEl.innerText = "ยืนยันรายการไม่สำเร็จ: กรุณากรอกข้อมูลให้ครบถ้วน";
         return;
@@ -76,3 +76,4 @@
   </script>
 </body>
 </html>
+
