@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>บันทึกรายการ</title>
   <style>
     body { font-family: sans-serif; padding: 10px; max-width: 600px; margin: auto; }
-    input, select, button { display: block; margin: 10px 0; padding: 10px; width: 100%; box-sizing: border-box; }
+    input, select, button, textarea { display: block; margin: 10px 0; padding: 10px; width: 100%; box-sizing: border-box; }
     img { max-width: 100%; margin: 10px 0; }
     #message { font-weight: bold; margin-top: 10px; }
   </style>
@@ -18,7 +18,7 @@
   <input type="date" id="startDate" placeholder="วันที่เริ่ม">
   <input type="date" id="endDate" placeholder="วันที่เสร็จ">
 
-  <textarea id="description" placeholder="รายละเอียดรายการ" rows="4" style="width:100%; margin-top:10px;"></textarea>
+  <textarea id="description" placeholder="รายละเอียดรายการ" rows="4"></textarea>
 
   <label>รูปก่อนแก้ไข:</label>
   <input type="file" accept="image/*" onchange="previewImage(this, 'beforeImg')"/>
@@ -36,7 +36,7 @@
     <option value="ลูกค้ารับมอบ">ลูกค้ารับมอบ</option>
   </select>
 
-  <button onclick="addEntry()">ยืนยันรายการ</button>
+  <button type="button" onclick="addEntry()">ยืนยันรายการ</button>
   <button onclick="location.reload()">เพิ่มรายการ</button>
   <button onclick="location.href='index.html'">กลับสู่หน้าหลัก</button>
 
@@ -54,6 +54,7 @@
       const plot = document.getElementById('plot').value.trim();
       const start = document.getElementById('startDate').value;
       const end = document.getElementById('endDate').value;
+      const description = document.getElementById('description').value.trim();
       const status = document.getElementById('status').value;
       const beforeImg = document.getElementById('beforeImg').src;
       const afterImg = document.getElementById('afterImg').src;
@@ -66,7 +67,7 @@
       }
 
       const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
-      data.push({ project, plot, start, end, status, beforeImg, afterImg, description: document.getElementById("description").value });
+      data.push({ project, plot, start, end, status, beforeImg, afterImg, description });
       localStorage.setItem('inspectionData', JSON.stringify(data));
 
       messageEl.style.color = 'green';
@@ -75,4 +76,3 @@
   </script>
 </body>
 </html>
-
