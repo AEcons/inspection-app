@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>บันทึกรายการ</title>
   <style>
     body { font-family: sans-serif; padding: 10px; max-width: 600px; margin: auto; }
@@ -11,7 +10,7 @@
     #message { font-weight: bold; }
   </style>
 </head>
-<body>
+<body onload="loadUserAndOptions()">
   <h2>บันทึก/แก้ไข รายการ</h2>
   <input list="projectList" id="project" placeholder="โครงการ">
   <datalist id="projectList"></datalist>
@@ -33,48 +32,63 @@
     <option value="QC pass">QC pass</option>
     <option value="ลูกค้ารับมอบ">ลูกค้ารับมอบ</option>
   </select>
-  <button onclick="saveEntry()">บันทึกรายการ</button>
-  <button onclick="loadEntry()">แสดงข้อมูลเดิม</button>
+  <button type="button" onclick="saveEntry()">บันทึกรายการ</button>
+  <button type="button" onclick="loadEntry()">แสดงข้อมูลเดิม</button>
   <button onclick="window.location.href='index.html'">กลับเมนูหลัก</button>
   <p id="message"></p>
+
 <script>
 function previewImage(input, imgId) {
   const reader = new FileReader();
   reader.onload = e => document.getElementById(imgId).src = e.target.result;
   reader.readAsDataURL(input.files[0]);
 }
-function saveEntry() {
-  const p = project.value.trim(), pl = plot.value.trim(), s = startDate.value, d = description.value.trim();
-  if (!p || !pl || !s || !d) {
-    message.innerText = "กรุณากรอกข้อมูลให้ครบถ้วน"; message.style.color = "red"; return;
-  }
+function loadUserAndOptions() {
   const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+  const ps = [...new Set(data.map(d => d.project))];
+  const pls = [...new Set(data.map(d => d.plot))];
+  document.getElementById('projectList').innerHTML = ps.map(p => `<option value="${p}">`).join('');
+  document.getElementById('plotList').innerHTML = pls.map(pl => `<option value="${pl}">`).join('');
+  if (!sessionStorage.getItem('username')) location.href = 'login.html';
+}
+function saveEntry() {
   const user = sessionStorage.getItem('username');
-  data.push({ user,
-    project: p, plot: pl, start: s, end: endDate.value, description: d,
-    status: status.value, beforeImg: beforeImg.src, afterImg: afterImg.src
-  });
+  const project = document.getElementById('project').value.trim();
+  const plot = document.getElementById('plot').value.trim();
+  const start = document.getElementById('startDate').value;
+  const end = document.getElementById('endDate').value;
+  const description = document.getElementById('description').value.trim();
+  const status = document.getElementById('status').value;
+  const beforeImg = document.getElementById('beforeImg').src;
+  const afterImg = document.getElementById('afterImg').src;
+  const msg = document.getElementById('message');
+
+  if (!user || !project || !plot || !start || !description) {
+    msg.innerText = "กรุณากรอกข้อมูลให้ครบถ้วน"; msg.style.color = "red"; return;
+  }
+
+  const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+  data.push({ user, project, plot, start, end, description, status, beforeImg, afterImg });
   localStorage.setItem('inspectionData', JSON.stringify(data));
-  message.innerText = "บันทึกข้อมูลเรียบร้อยแล้ว"; message.style.color = "green";
+  msg.innerText = "บันทึกข้อมูลเรียบร้อยแล้ว"; msg.style.color = "green";
 }
 function loadEntry() {
   const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
-  const user = sessionStorage.getItem('username');
-  const p = project.value.trim(), pl = plot.value.trim();
-  const found = data.find(d => d.project === p && d.plot === pl);
-  if (!found) { message.innerText = "ไม่พบข้อมูลเดิม"; message.style.color = "red"; return; }
-  startDate.value = found.start; endDate.value = found.end; description.value = found.description;
-  status.value = found.status; beforeImg.src = found.beforeImg; afterImg.src = found.afterImg;
-  message.innerText = "โหลดข้อมูลเดิมแล้ว"; message.style.color = "green";
+  const project = document.getElementById('project').value.trim();
+  const plot = document.getElementById('plot').value.trim();
+  const found = data.find(d => d.project === project && d.plot === plot && d.user === sessionStorage.getItem('username'));
+  const msg = document.getElementById('message');
+  if (!found) {
+    msg.innerText = "ไม่พบข้อมูลเดิม"; msg.style.color = "red"; return;
+  }
+  startDate.value = found.start;
+  endDate.value = found.end;
+  description.value = found.description;
+  status.value = found.status;
+  beforeImg.src = found.beforeImg;
+  afterImg.src = found.afterImg;
+  msg.innerText = "โหลดข้อมูลเดิมแล้ว"; msg.style.color = "green";
 }
-window.onload = () => {
-  const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
-  const user = sessionStorage.getItem('username');
-  const ps = [...new Set(data.map(d => d.project))];
-  const pls = [...new Set(data.map(d => d.plot))];
-  projectList.innerHTML = ps.map(p => `<option value="${p}">`).join('');
-  plotList.innerHTML = pls.map(pl => `<option value="${pl}">`).join('');
-};
 </script>
 </body>
 </html>
