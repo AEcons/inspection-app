@@ -49,10 +49,10 @@
     <option value="QC pass">QC pass</option>
     <option value="ลูกค้ารับมอบ">ลูกค้ารับมอบ</option>
   </select>
-  <button onclick="preloadData()">แสดงข้อมูลเดิม</button>
 
   <button type="button" onclick="addEntry()">ยืนยันรายการ</button>
   <button onclick="location.reload()">เพิ่มรายการ</button>
+  <button onclick="preloadData()">แสดงข้อมูลเดิม</button>
   <button onclick="editEntry()">แก้ไขรายการ</button>
   <button onclick="location.href='index.html'">กลับสู่หน้าหลัก</button>
 
@@ -107,6 +107,27 @@
       messageEl.innerText = "ยืนยันรายการสำเร็จ";
     }
 
+    function preloadData() {
+      const project = document.getElementById('project').value.trim();
+      const plot = document.getElementById('plot').value.trim();
+      const messageEl = document.getElementById('message');
+      const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+      const found = data.find(d => d.project === project && d.plot === plot);
+      if (!found) {
+        messageEl.style.color = 'red';
+        messageEl.innerText = "ไม่พบข้อมูลเดิมสำหรับโครงการและเลขแปลงนี้";
+        return;
+      }
+      document.getElementById('startDate').value = found.start || '';
+      document.getElementById('endDate').value = found.end || '';
+      document.getElementById('description').value = found.description || '';
+      document.getElementById('status').value = found.status || '';
+      document.getElementById('beforeImg').src = found.beforeImg || '';
+      document.getElementById('afterImg').src = found.afterImg || '';
+      messageEl.style.color = 'green';
+      messageEl.innerText = "โหลดข้อมูลเดิมเรียบร้อยแล้ว";
+    }
+
     function editEntry() {
       const project = document.getElementById('project').value.trim();
       const plot = document.getElementById('plot').value.trim();
@@ -132,28 +153,7 @@
       messageEl.style.color = 'green';
       messageEl.innerText = "แก้ไขรายการสำเร็จ";
     }
-  
-    function preloadData() {
-      const project = document.getElementById('project').value.trim();
-      const plot = document.getElementById('plot').value.trim();
-      const messageEl = document.getElementById('message');
-      const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
-      const found = data.find(d => d.project === project && d.plot === plot);
-      if (!found) {
-        messageEl.style.color = 'red';
-        messageEl.innerText = "ไม่พบข้อมูลเดิมสำหรับโครงการและเลขแปลงนี้";
-        return;
-      }
-      document.getElementById('startDate').value = found.start || '';
-      document.getElementById('endDate').value = found.end || '';
-      document.getElementById('description').value = found.description || '';
-      document.getElementById('status').value = found.status || '';
-      document.getElementById('beforeImg').src = found.beforeImg || '';
-      document.getElementById('afterImg').src = found.afterImg || '';
-      messageEl.style.color = 'green';
-      messageEl.innerText = "โหลดข้อมูลเดิมเรียบร้อยแล้ว";
-    }
-</script>
+  </script>
 </body>
 </html>
 
