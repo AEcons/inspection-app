@@ -18,6 +18,8 @@
   <input type="date" id="startDate" placeholder="วันที่เริ่ม">
   <input type="date" id="endDate" placeholder="วันที่เสร็จ">
 
+  <textarea id="description" placeholder="รายละเอียดรายการ" rows="4" style="width:100%; margin-top:10px;"></textarea>
+
   <label>รูปก่อนแก้ไข:</label>
   <input type="file" accept="image/*" onchange="previewImage(this, 'beforeImg')"/>
   <img id="beforeImg" />
@@ -28,6 +30,7 @@
 
   <label>สถานะบ้าน:</label>
   <select id="status">
+    <option value="">-- เลือกสถานะ --</option>
     <option value="ระหว่างแก้ไข">ระหว่างแก้ไข</option>
     <option value="QC pass">QC pass</option>
     <option value="ลูกค้ารับมอบ">ลูกค้ารับมอบ</option>
@@ -49,24 +52,21 @@
     function addEntry() {
       const project = document.getElementById('project').value.trim();
       const plot = document.getElementById('plot').value.trim();
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+      const status = document.getElementById('status').value;
+      const beforeImg = document.getElementById('beforeImg').src;
+      const afterImg = document.getElementById('afterImg').src;
       const messageEl = document.getElementById('message');
 
-      if (!project || !plot) {
+      if (!project || !plot || !start || !end || !status || !beforeImg || beforeImg === window.location.href) {
         messageEl.style.color = 'red';
-        messageEl.innerText = "ยืนยันรายการไม่สำเร็จ: กรุณากรอกโครงการและเลขแปลง";
+        messageEl.innerText = "ยืนยันรายการไม่สำเร็จ: กรุณากรอกข้อมูลให้ครบถ้วน";
         return;
       }
 
       const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
-      data.push({
-        project,
-        plot,
-        start: document.getElementById('startDate').value,
-        end: document.getElementById('endDate').value,
-        status: document.getElementById('status').value,
-        beforeImg: document.getElementById('beforeImg').src,
-        afterImg: document.getElementById('afterImg').src
-      });
+      data.push({ project, plot, start, end, status, beforeImg, afterImg, description: document.getElementById("description").value });
       localStorage.setItem('inspectionData', JSON.stringify(data));
 
       messageEl.style.color = 'green';
@@ -75,3 +75,4 @@
   </script>
 </body>
 </html>
+
