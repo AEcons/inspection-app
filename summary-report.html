@@ -1,24 +1,20 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>รายงานสรุป</title>
   <style>
-    body { font-family: sans-serif; padding: 20px; max-width: 900px; margin: auto; }
+    body { font-family: sans-serif; max-width: 800px; margin: auto; padding: 20px; }
     select, button { width: 100%; padding: 10px; margin: 10px 0; }
     table { width: 100%; border-collapse: collapse; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    h2, h3 { text-align: center; }
-    .top-defects { margin-top: 30px; }
+    img.logo { width: 100px; display: block; margin: auto; }
   </style>
 </head>
 <body>
-  <img src="logo-ae.png" alt="AE Logo" style="width: 100px; display:block; margin:auto;">
-  <h2>รายงานสรุป</h2>
-  <select id="projectSelect">
-    <option value="">เลือกโครงการ</option>
-  </select>
+  <img src="logo-512.png" class="logo" alt="logo">
+  <h2 style="text-align:center;">รายงานสรุป</h2>
+  <select id="projectSelect"><option value="">เลือกโครงการ</option></select>
   <div id="summary">
     <p><strong>จำนวนหลังแจ้งซ่อม:</strong> <span id="houseCount">-</span></p>
     <p><strong>จำนวนรายการทั้งหมด:</strong> <span id="totalDefect">-</span></p>
@@ -26,77 +22,39 @@
     <p><strong>รายการคงเหลือ:</strong> <span id="remainingCount">-</span></p>
     <p><strong>อัปเดทล่าสุด:</strong> <span id="lastUpdated">-</span></p>
   </div>
-
-  <div class="top-defects">
-    <h3>รายการแจ้งซ่อมสูงสุด 3 อันดับแรก</h3>
-    <table>
-      <thead><tr><th>รายละเอียดรายการ</th><th>จำนวนที่แจ้ง</th></tr></thead>
-      <tbody id="topDefects"></tbody>
-    </table>
-  </div>
-
-  <script>
-    const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
-    const projectSet = [...new Set(data.map(d => d.project))];
-    const projectSelect = document.getElementById("projectSelect");
-
-    projectSet.forEach(project => {
-      const opt = document.createElement("option");
-      opt.value = project;
-      opt.textContent = project;
-      projectSelect.appendChild(opt);
-    });
-
-    projectSelect.addEventListener("change", () => {
-      const selected = projectSelect.value;
-      const filtered = data.filter(d => d.project === selected);
-      const plots = [...new Set(filtered.map(d => d.plot))];
-      const total = filtered.length;
-      const fixed = filtered.filter(d => d.status === "QC pass" || d.status === "ลูกค้ารับมอบ").length;
-      const remain = total - fixed;
-
-      const last = filtered[filtered.length - 1]?.end || filtered[filtered.length - 1]?.start || '-';
-
-      document.getElementById("houseCount").innerText = plots.length;
-      document.getElementById("totalDefect").innerText = total;
-      document.getElementById("fixedCount").innerText = fixed;
-      document.getElementById("remainingCount").innerText = remain;
-      document.getElementById("lastUpdated").innerText = last;
-
-      
-    const defectDescriptions = {};
-    filtered.forEach(d => {
-      const key = d.description || 'ไม่ระบุรายละเอียด';
-      defectDescriptions[key] = (defectDescriptions[key] || 0) + 1;
-    });
-    const topDefects = Object.entries(defectDescriptions)
-      .sort((a,b) => b[1] - a[1])
-      .slice(0,3);
-
-    const topTable = document.getElementById("topDefects");
-    topTable.innerHTML = '';
-    topDefects.forEach(([desc, count]) => {
-      topTable.innerHTML += `<tr><td>${desc}</td><td>${count}</td></tr>`;
-    });
-
-    // ส่วนของ 3 อันดับแรกจาก plot เดิมถูกลบทิ้ง
-    
-      filtered.forEach(d => {
-        countByPlot[d.plot] = (countByPlot[d.plot] || 0) + 1;
-      });
-
-      const top = Object.entries(countByPlot)
-        .sort((a,b) => b[1] - a[1])
-        .slice(0,3);
-
-      const topTable = document.getElementById("topDefects");
-      topTable.innerHTML = '';
-      top.forEach(([plot, count]) => {
-        topTable.innerHTML += `<tr><td>${plot}</td><td>${count}</td></tr>`;
-      });
-    });
-  </script>
-<button onclick="location.href='index.html'">กลับเมนูหลัก</button>
-<button onclick="window.print()">พิมพ์หน้านี้</button>
+  <h3>รายการแจ้งซ่อมสูงสุด 3 อันดับแรก</h3>
+  <table><thead><tr><th>รายละเอียดรายการ</th><th>จำนวนที่แจ้ง</th></tr></thead><tbody id="topDefects"></tbody></table>
+  <button onclick="location.href='index.html'">กลับเมนูหลัก</button>
+  <button onclick="window.print()">พิมพ์หน้านี้</button>
+<script>
+const data = JSON.parse(localStorage.getItem('inspectionData') || '[]').filter(d => d.user === sessionStorage.getItem('username'));
+const projectSet = [...new Set(data.map(d => d.project))];
+projectSet.forEach(p => {
+  const opt = document.createElement("option");
+  opt.value = p; opt.textContent = p;
+  projectSelect.appendChild(opt);
+});
+projectSelect.addEventListener("change", () => {
+  const selected = projectSelect.value;
+  const filtered = data.filter(d => d.project === selected);
+  const plots = [...new Set(filtered.map(d => d.plot))];
+  const total = filtered.length;
+  const fixed = filtered.filter(d => d.status === "QC pass" || d.status === "ลูกค้ารับมอบ").length;
+  const remain = total - fixed;
+  const last = filtered[filtered.length - 1]?.end || filtered[filtered.length - 1]?.start || '-';
+  document.getElementById("houseCount").innerText = plots.length;
+  document.getElementById("totalDefect").innerText = total;
+  document.getElementById("fixedCount").innerText = fixed;
+  document.getElementById("remainingCount").innerText = remain;
+  document.getElementById("lastUpdated").innerText = last;
+  const descCount = {};
+  filtered.forEach(d => {
+    const key = d.description || 'ไม่ระบุรายละเอียด';
+    descCount[key] = (descCount[key] || 0) + 1;
+  });
+  const top = Object.entries(descCount).sort((a,b) => b[1]-a[1]).slice(0,3);
+  topDefects.innerHTML = top.map(([desc,count]) => `<tr><td>${desc}</td><td>${count}</td></tr>`).join('');
+});
+</script>
 </body>
 </html>

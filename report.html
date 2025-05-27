@@ -1,78 +1,73 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>บันทึกรายการ</title>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>รายงาน</title>
   <style>
-    body { font-family: sans-serif; padding: 10px; max-width: 600px; margin: auto; }
-    input, select, button { display: block; margin: 10px 0; padding: 10px; width: 100%; box-sizing: border-box; }
+    body { font-family: sans-serif; padding: 20px; max-width: 1000px; margin: auto; }
+    select, button { padding: 10px; margin: 10px 0; width: 100%; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    h2 { text-align: center; }
     img { max-width: 100%; margin: 10px 0; }
-    #message { font-weight: bold; margin-top: 10px; }
+    .green { background-color: #d4edda; }
+    .yellow { background-color: #fff3cd; }
+    .signatures { display: flex; justify-content: space-between; margin-top: 50px; }
+    .signatures div { text-align: center; width: 45%; }
+    @media print {
+      button, select { display: none; }
+    }
   </style>
 </head>
 <body>
-  <h2>บันทึกรายการ</h2>
-  <input type="text" id="project" placeholder="โครงการ">
-  <input type="text" id="plot" placeholder="เลขแปลง">
-  <input type="date" id="startDate" placeholder="วันที่เริ่ม">
-  <input type="date" id="endDate" placeholder="วันที่เสร็จ">
+  <h2>รายงานรายการแต่ละแปลง</h2>
+  <select id="projectSelect"><option value="">เลือกโครงการ</option></select>
+  <select id="plotSelect"><option value="">เลือกเลขแปลง</option></select>
+  <div id="reportArea"></div>
+  <div class="signatures">
+    <div>ผู้ควบคุมงาน<br><br>____________________</div>
+    <div>ผู้อนุมัติ<br><br>____________________</div>
+  </div>
+  <button onclick="location.href='index.html'">กลับเมนูหลัก</button>
+  <button onclick="window.print()">พิมพ์หน้านี้</button>
 
-  <label>รูปก่อนแก้ไข:</label>
-  <input type="file" accept="image/*" onchange="previewImage(this, 'beforeImg')"/>
-  <img id="beforeImg" />
+<script>
+const data = JSON.parse(localStorage.getItem('inspectionData') || '[]').filter(d => d.user === sessionStorage.getItem('username'));
+const projectSet = [...new Set(data.map(d => d.project))];
+projectSet.forEach(p => {
+  const opt = document.createElement("option");
+  opt.value = p; opt.textContent = p;
+  projectSelect.appendChild(opt);
+});
 
-  <label>รูปหลังแก้ไข:</label>
-  <input type="file" accept="image/*" onchange="previewImage(this, 'afterImg')"/>
-  <img id="afterImg" />
+projectSelect.addEventListener("change", () => {
+  const plots = [...new Set(data.filter(d => d.project === projectSelect.value).map(d => d.plot))];
+  plotSelect.innerHTML = '<option value="">เลือกเลขแปลง</option>';
+  plots.forEach(pl => {
+    const opt = document.createElement("option");
+    opt.value = pl; opt.textContent = pl;
+    plotSelect.appendChild(opt);
+  });
+});
 
-  <label>สถานะบ้าน:</label>
-  <select id="status">
-    <option value="ระหว่างแก้ไข">ระหว่างแก้ไข</option>
-    <option value="QC pass">QC pass</option>
-    <option value="ลูกค้ารับมอบ">ลูกค้ารับมอบ</option>
-  </select>
-
-  <button onclick="addEntry()">ยืนยันรายการ</button>
-  <button onclick="location.reload()">เพิ่มรายการ</button>
-  <button onclick="location.href='index.html'">กลับสู่หน้าหลัก</button>
-
-  <p id="message"></p>
-
-  <script>
-    function previewImage(input, imgId) {
-      const reader = new FileReader();
-      reader.onload = e => document.getElementById(imgId).src = e.target.result;
-      reader.readAsDataURL(input.files[0]);
-    }
-
-    function addEntry() {
-      const project = document.getElementById('project').value.trim();
-      const plot = document.getElementById('plot').value.trim();
-      const messageEl = document.getElementById('message');
-
-      if (!project || !plot) {
-        messageEl.style.color = 'red';
-        messageEl.innerText = "ยืนยันรายการไม่สำเร็จ: กรุณากรอกโครงการและเลขแปลง";
-        return;
-      }
-
-      const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
-      data.push({
-        project,
-        plot,
-        start: document.getElementById('startDate').value,
-        end: document.getElementById('endDate').value,
-        status: document.getElementById('status').value,
-        beforeImg: document.getElementById('beforeImg').src,
-        afterImg: document.getElementById('afterImg').src
-      });
-      localStorage.setItem('inspectionData', JSON.stringify(data));
-
-      messageEl.style.color = 'green';
-      messageEl.innerText = "ยืนยันรายการสำเร็จ";
-    }
-  </script>
+plotSelect.addEventListener("change", () => {
+  const selected = data.filter(d =>
+    d.project === projectSelect.value && d.plot === plotSelect.value
+  );
+  let html = `<h3>โครงการ: ${projectSelect.value} | เลขแปลง: ${plotSelect.value}</h3>`;
+  selected.forEach((d, i) => {
+    html += `
+      <hr><p><strong>รายการที่ ${i + 1}</strong></p>
+      <p><strong>วันที่เริ่ม:</strong> ${d.start}</p>
+      <p><strong>วันที่เสร็จ:</strong> ${d.end}</p>
+      <p><strong>รายละเอียด:</strong> ${d.description}</p>
+      <p><strong>สถานะ:</strong> ${d.status}</p>
+      <p><strong>รูปก่อนแก้ไข:</strong><br><img src="${d.beforeImg}"></p>
+      <p><strong>รูปหลังแก้ไข:</strong><br><img src="${d.afterImg}"></p>
+    `;
+  });
+  document.getElementById("reportArea").innerHTML = html;
+});
+</script>
 </body>
 </html>
-
