@@ -5,12 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>รายงาน</title>
   <style>
-    body { font-family: sans-serif; padding: 10px; max-width: 700px; margin: auto; }
+    body { font-family: sans-serif; padding: 10px; max-width: 800px; margin: auto; }
     table { width: 100%; border-collapse: collapse; margin: 20px 0; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
     .green { background-color: #d4edda; }
     .yellow { background-color: #fff3cd; }
-    select, button { width: 100%; margin: 5px 0; padding: 10px; }
+    select, button { width: 100%; margin: 5px 0; padding: 10px; box-sizing: border-box; }
+    .print-options { display: flex; gap: 10px; margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -24,8 +25,13 @@
     <tbody id="reportBody"></tbody>
   </table>
 
+  <div class="print-options">
+    <button onclick="printSingle()">พิมพ์รายการนี้</button>
+    <button onclick="printAll()">พิมพ์ทุกรายการ</button>
+  </div>
   <button onclick="location.href='index.html'">กลับเมนูหลัก</button>
-  <button onclick="window.print()">พิมพ์</button>
+
+  <iframe id="printFrame" style="display:none;"></iframe>
 
   <script>
     const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
@@ -76,6 +82,60 @@
       sessionStorage.setItem('project', project);
       sessionStorage.setItem('plot', plot);
       location.href = 'detail.html';
+    }
+
+    function printSingle() {
+      const project = projectSelect.value;
+      const plot = plotSelect.value;
+      if (!project || !plot) return alert("กรุณาเลือกโครงการและเลขแปลงก่อนพิมพ์");
+
+      const entries = data.filter(d => d.project === project && d.plot === plot);
+      printData(entries, `โครงการ: ${project} | แปลง: ${plot}`);
+    }
+
+    function printAll() {
+      const project = projectSelect.value;
+      if (!project) return alert("กรุณาเลือกโครงการก่อนพิมพ์");
+
+      const entries = data.filter(d => d.project === project);
+      const grouped = {};
+      entries.forEach(d => {
+        if (!grouped[d.plot]) grouped[d.plot] = [];
+        grouped[d.plot].push(d);
+      });
+
+      let html = '';
+      for (const plot in grouped) {
+        html += `<h3>แปลง ${plot}</h3>`;
+        grouped[plot].forEach((d, i) => {
+          html += `<p><strong>รายการ ${i + 1}</strong><br>วันที่เริ่ม: ${d.start}<br>วันที่เสร็จ: ${d.end}<br>สถานะ: ${d.status}</p>
+          <p>รูปก่อน:<br><img src="${d.beforeImg}" width="200"/></p>
+          <p>รูปหลัง:<br><img src="${d.afterImg}" width="200"/></p><hr>`;
+        });
+      }
+
+      printData(null, html, true);
+    }
+
+    function printData(entries, header = '', isRawHTML = false) {
+      const frame = document.getElementById('printFrame');
+      const doc = frame.contentWindow.document;
+      doc.open();
+      doc.write(`<html><head><title>พิมพ์</title></head><body>`);
+      doc.write(`<h2>${header}</h2>`);
+      if (isRawHTML) {
+        doc.write(header);
+      } else {
+        entries.forEach((d, i) => {
+          doc.write(`<p><strong>รายการ ${i + 1}</strong><br>วันที่เริ่ม: ${d.start}<br>วันที่เสร็จ: ${d.end}<br>สถานะ: ${d.status}</p>
+          <p>รูปก่อน:<br><img src="${d.beforeImg}" width="200"/></p>
+          <p>รูปหลัง:<br><img src="${d.afterImg}" width="200"/></p><hr>`);
+        });
+      }
+      doc.write(`</body></html>`);
+      doc.close();
+      frame.contentWindow.focus();
+      frame.contentWindow.print();
     }
   </script>
 </body>
