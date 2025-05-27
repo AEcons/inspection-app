@@ -8,6 +8,7 @@
     body { font-family: sans-serif; padding: 10px; max-width: 600px; margin: auto; }
     input, select, button { display: block; margin: 10px 0; padding: 10px; width: 100%; box-sizing: border-box; }
     img { max-width: 100%; margin: 10px 0; }
+    #message { font-weight: bold; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -32,12 +33,11 @@
     <option value="ลูกค้ารับมอบ">ลูกค้ารับมอบ</option>
   </select>
 
-  
   <button onclick="addEntry()">ยืนยันรายการ</button>
-  <p id="message" style="color: green; font-weight: bold;"></p>
-    
   <button onclick="location.reload()">เพิ่มรายการ</button>
   <button onclick="location.href='index.html'">กลับสู่หน้าหลัก</button>
+
+  <p id="message"></p>
 
   <script>
     function previewImage(input, imgId) {
@@ -46,20 +46,21 @@
       reader.readAsDataURL(input.files[0]);
     }
 
-    
     function addEntry() {
-      const project = document.getElementById('project').value;
-      const plot = document.getElementById('plot').value;
+      const project = document.getElementById('project').value.trim();
+      const plot = document.getElementById('plot').value.trim();
+      const messageEl = document.getElementById('message');
+
       if (!project || !plot) {
-        document.getElementById('message').style.color = 'red';
-        document.getElementById('message').innerText = "ยืนยันรายการไม่สำเร็จ: กรุณากรอกโครงการและเลขแปลง";
+        messageEl.style.color = 'red';
+        messageEl.innerText = "ยืนยันรายการไม่สำเร็จ: กรุณากรอกโครงการและเลขแปลง";
         return;
       }
-    
+
       const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
       data.push({
-        project: document.getElementById('project').value,
-        plot: document.getElementById('plot').value,
+        project,
+        plot,
         start: document.getElementById('startDate').value,
         end: document.getElementById('endDate').value,
         status: document.getElementById('status').value,
@@ -67,8 +68,9 @@
         afterImg: document.getElementById('afterImg').src
       });
       localStorage.setItem('inspectionData', JSON.stringify(data));
-      document.getElementById("message").style.color = "green";
-      document.getElementById("message").innerText = "ยืนยันรายการสำเร็จ";
+
+      messageEl.style.color = 'green';
+      messageEl.innerText = "ยืนยันรายการสำเร็จ";
     }
   </script>
 </body>
