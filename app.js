@@ -1,1 +1,1 @@
-document.addEventListener('DOMContentLoaded', function () { });
+<!-- Placeholder for app.js -->

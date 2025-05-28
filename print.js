@@ -1,3 +1,1 @@
-function printDetail() {
-  window.print();
-}
+<!-- Placeholder for print.js -->
