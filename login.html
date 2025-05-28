@@ -1,1 +1,47 @@
-<!-- Placeholder for login.html -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>เข้าสู่ระบบ</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: auto; padding: 40px; text-align: center; }
+    input, select, button { padding: 12px; margin: 10px 0; width: 100%; font-size: 16px; }
+    h2 { margin-bottom: 30px; }
+  </style>
+</head>
+<body>
+  <h2>เข้าสู่ระบบ AE Inspector</h2>
+  <select id="savedUsers">
+    <option value="">-- เลือกชื่อที่เคยใช้ --</option>
+  </select>
+  <input type="text" id="username" placeholder="หรือกรอกชื่อใหม่">
+  <button onclick="login()">เข้าสู่ระบบ</button>
+
+  <script>
+    const saved = JSON.parse(localStorage.getItem('users') || '[]');
+    const select = document.getElementById('savedUsers');
+    saved.forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      select.appendChild(opt);
+    });
+
+    select.addEventListener("change", () => {
+      document.getElementById('username').value = select.value;
+    });
+
+    function login() {
+      const name = document.getElementById('username').value.trim();
+      if (!name) return alert("กรุณากรอกชื่อผู้ใช้งาน");
+
+      sessionStorage.setItem("username", name);
+      if (!saved.includes(name)) {
+        saved.push(name);
+        localStorage.setItem('users', JSON.stringify(saved));
+      }
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
