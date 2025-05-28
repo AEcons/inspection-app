@@ -1,1 +1,158 @@
-<!-- Placeholder for record.html -->
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>บันทึกรายการ</title>
+  <style>
+    body { font-family: sans-serif; padding: 10px; max-width: 600px; margin: auto; }
+    input, select, button, textarea { display: block; margin: 10px 0; padding: 10px; width: 100%; box-sizing: border-box; }
+    img { max-width: 100%; margin: 10px 0; }
+    #message { font-weight: bold; margin-top: 10px; }
+  </style>
+</head>
+<body onload="loadProjectsAndPlots()">
+  <h2>บันทึกรายการ</h2>
+
+  <label>โครงการ:</label>
+  <input list="projectList" id="project" placeholder="เลือกหรือพิมพ์ชื่อโครงการ">
+  <datalist id="projectList">
+    <option value="D-Plus">
+    <option value="D-Kano">
+    <option value="D-Sora">
+  </datalist>
+
+  <label>เลขแปลง:</label>
+  <input list="plotList" id="plot" placeholder="เลือกหรือพิมพ์เลขแปลง">
+  <datalist id="plotList"></datalist>
+
+  <label>วันที่ตรวจ 1:</label>
+  <input type="date" id="startDate" value="2025-05-27">
+
+  <label>วันที่เสร็จ:</label>
+  <input type="date" id="endDate">
+
+  <textarea id="description" placeholder="รายละเอียดรายการ" rows="4"></textarea>
+
+  <label>รูปก่อนแก้ไข:</label>
+  <input type="file" accept="image/*" onchange="previewImage(this, 'beforeImg')"/>
+  <img id="beforeImg" />
+
+  <label>รูปหลังแก้ไข:</label>
+  <input type="file" accept="image/*" onchange="previewImage(this, 'afterImg')"/>
+  <img id="afterImg" />
+
+  <label>สถานะบ้าน:</label>
+  <select id="status">
+    <option value="">-- เลือกสถานะ --</option>
+    <option value="ระหว่างแก้ไข">ระหว่างแก้ไข</option>
+    <option value="QC pass">QC pass</option>
+    <option value="ลูกค้ารับมอบ">ลูกค้ารับมอบ</option>
+  </select>
+
+  <button type="button" onclick="addEntry()">บันทึกรายการ</button>
+  <button onclick="location.reload()">เพิ่มรายการ</button>
+  <button onclick="preloadData()">แสดงข้อมูลเดิม</button>
+  <button onclick="editEntry()">แก้ไขรายการ</button>
+  <button onclick="location.href='index.html'">กลับสู่หน้าหลัก</button>
+
+  <p id="message"></p>
+
+  <script>
+    function previewImage(input, imgId) {
+      const reader = new FileReader();
+      reader.onload = e => document.getElementById(imgId).src = e.target.result;
+      reader.readAsDataURL(input.files[0]);
+    }
+
+    function loadProjectsAndPlots() {
+      const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+      const projectSet = new Set();
+      const plotSet = new Set();
+      data.forEach(d => {
+        projectSet.add(d.project);
+        plotSet.add(d.plot);
+      });
+      const plotList = document.getElementById('plotList');
+      plotList.innerHTML = '';
+      plotSet.forEach(plot => {
+        const opt = document.createElement('option');
+        opt.value = plot;
+        plotList.appendChild(opt);
+      });
+    }
+
+    function addEntry() {
+      const project = document.getElementById('project').value.trim();
+      const plot = document.getElementById('plot').value.trim();
+      const start = document.getElementById('startDate').value;
+      const end = document.getElementById('endDate').value;
+      const description = document.getElementById('description').value.trim();
+      const status = document.getElementById('status').value;
+      const beforeImg = document.getElementById('beforeImg').src;
+      const afterImg = document.getElementById('afterImg').src;
+      const messageEl = document.getElementById('message');
+
+      if (!project || !plot || !start || !description) {
+        messageEl.style.color = 'red';
+        messageEl.innerText = "ยืนยันรายการไม่สำเร็จ: กรุณากรอกข้อมูลให้ครบถ้วน";
+        return;
+      }
+
+      const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+      data.push({ project, plot, start, end, status, beforeImg, afterImg, description });
+      localStorage.setItem('inspectionData', JSON.stringify(data));
+
+      messageEl.style.color = 'green';
+      messageEl.innerText = "ยืนยันรายการสำเร็จ";
+    }
+
+    function preloadData() {
+      const project = document.getElementById('project').value.trim();
+      const plot = document.getElementById('plot').value.trim();
+      const messageEl = document.getElementById('message');
+      const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+      const found = data.find(d => d.project === project && d.plot === plot);
+      if (!found) {
+        messageEl.style.color = 'red';
+        messageEl.innerText = "ไม่พบข้อมูลเดิมสำหรับโครงการและเลขแปลงนี้";
+        return;
+      }
+      document.getElementById('startDate').value = found.start || '';
+      document.getElementById('endDate').value = found.end || '';
+      document.getElementById('description').value = found.description || '';
+      document.getElementById('status').value = found.status || '';
+      document.getElementById('beforeImg').src = found.beforeImg || '';
+      document.getElementById('afterImg').src = found.afterImg || '';
+      messageEl.style.color = 'green';
+      messageEl.innerText = "โหลดข้อมูลเดิมเรียบร้อยแล้ว";
+    }
+
+    function editEntry() {
+      const project = document.getElementById('project').value.trim();
+      const plot = document.getElementById('plot').value.trim();
+      const data = JSON.parse(localStorage.getItem('inspectionData') || '[]');
+      const index = data.findIndex(d => d.project === project && d.plot === plot);
+      const messageEl = document.getElementById('message');
+      if (index === -1) {
+        messageEl.style.color = 'red';
+        messageEl.innerText = "ไม่พบรายการที่ต้องการแก้ไข";
+        return;
+      }
+      data[index].start = document.getElementById('startDate').value;
+      data[index].end = document.getElementById('endDate').value;
+      data[index].status = document.getElementById('status').value;
+      data[index].description = document.getElementById('description').value.trim();
+      if (document.getElementById('beforeImg').src !== window.location.href) {
+        data[index].beforeImg = document.getElementById('beforeImg').src;
+      }
+      if (document.getElementById('afterImg').src !== window.location.href) {
+        data[index].afterImg = document.getElementById('afterImg').src;
+      }
+      localStorage.setItem('inspectionData', JSON.stringify(data));
+      messageEl.style.color = 'green';
+      messageEl.innerText = "แก้ไขรายการสำเร็จ";
+    }
+  </script>
+</body>
+</html>
