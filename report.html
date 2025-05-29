@@ -10,36 +10,42 @@
   <h1>หน้ารายงาน</h1>
   <label for="projectSelect">เลือกโครงการ:</label>
   <select id="projectSelect" onchange="filterByProject()"></select>
+  <h3 id="selectedProjectTitle"></h3>
   <div id="reportTable"></div>
   <button onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
 
   <script>
     let records = [];
+
     function loadProjects() {
       records = JSON.parse(localStorage.getItem('aeRecords') || '[]');
       const projects = [...new Set(records.map(r => r.project))];
       const select = document.getElementById('projectSelect');
-      select.innerHTML = '<option value="">-- เลือกโครงการ --</option>' +
+      select.innerHTML = '<option value="all">-- ดูทุกโครงการ --</option>' +
         projects.map(p => `<option value="${p}">${p}</option>`).join('');
     }
 
     function filterByProject() {
       const project = document.getElementById('projectSelect').value;
       const table = document.getElementById('reportTable');
-      if (!project) return table.innerHTML = '';
-      const filtered = records.filter(r => r.project === project);
+      const header = document.getElementById('selectedProjectTitle');
+
+      const filtered = project === 'all' ? records : records.filter(r => r.project === project);
+      header.innerHTML = project === 'all' ? "ข้อมูลรายแปลงของทุกโครงการ" : `ข้อมูลรายแปลงของโครงการ: ${project}`;
 
       const grouped = {};
       filtered.forEach(r => {
-        if (!grouped[r.plot]) grouped[r.plot] = [];
-        grouped[r.plot].push(r);
+        const key = `${r.project}||${r.plot}`;
+        if (!grouped[key]) grouped[key] = [];
+        grouped[key].push(r);
       });
 
-      table.innerHTML = '<h3>รายการแปลง</h3>' + Object.entries(grouped).map(([plot, items]) => {
+      table.innerHTML = Object.entries(grouped).map(([key, items]) => {
+        const [proj, plot] = key.split('||');
         const status = items[items.length - 1].status;
         return `<div>
-          🏠 <b>แปลง ${plot}</b> - สถานะ: ${status} - จำนวน ${items.length} รายการ
-          <button onclick="viewDetail('${project}', '${plot}')">รายละเอียด</button>
+          🏠 <b>โครงการ: ${proj} - แปลง ${plot}</b> - สถานะ: ${status} - จำนวน ${items.length} รายการ
+          <button onclick="viewDetail('${proj}', '${plot}')">รายละเอียด</button>
         </div>`;
       }).join('');
     }
