@@ -29,6 +29,8 @@
     </label>
     <button type="submit">บันทึก</button>
   </form>
+
+  <button onclick="loadPrevious()">📂 แสดงข้อมูลเดิม</button>
   <button onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
 
   <script>
@@ -66,15 +68,32 @@
       const response = await fetch("https://script.google.com/macros/s/AKfycbz6TxFLY4L6kX15soOUBd-jRMY5cBB80jZtEDhJkkBq4TRLW6EhdmvxOPizJSo5w3jzHg/exec", {
         method: "POST",
         body: JSON.stringify([record]),
-        headers: {
-          "Content-Type": "application/json"
-        }
+        headers: { "Content-Type": "application/json" }
       });
 
       const text = await response.text();
       alert(text);
       form.reset();
     };
+
+    async function loadPrevious() {
+      const url = "https://script.google.com/macros/s/AKfycbz6TxFLY4L6kX15soOUBd-jRMY5cBB80jZtEDhJkkBq4TRLW6EhdmvxOPizJSo5w3jzHg/exec";
+      const res = await fetch(url);
+      const records = await res.json();
+      const proj = prompt("กรอกชื่อโครงการ:");
+      const plot = prompt("กรอกเลขแปลง:");
+      const found = records.reverse().find(r => r.project === proj && r.plot === plot);
+      if (!found) return alert("ไม่พบข้อมูลเดิม");
+
+      form.project.value = found.project;
+      form.plot.value = found.plot;
+      form.startDate.value = found.startDate;
+      form.endDate.value = found.endDate;
+      form.description.value = found.description;
+      form.status.value = found.status;
+
+      alert("โหลดข้อมูลเดิมสำเร็จ กรุณาเพิ่มรูปหลังทำหรือปรับสถานะ แล้วกด 'บันทึก'");
+    }
   </script>
 </body>
 </html>
