@@ -15,18 +15,10 @@
     <label>วันที่เสร็จ: <input type="date" id="endDate"></label>
     <label>รายการงาน: <textarea id="description" required></textarea></label>
 
-    <label>📷 รูปก่อนทำ 1:
-      <input type="file" id="before1" accept="image/*" capture="environment">
-    </label>
-    <label>📷 รูปก่อนทำ 2:
-      <input type="file" id="before2" accept="image/*">
-    </label>
-    <label>📷 รูปหลังทำ 1:
-      <input type="file" id="after1" accept="image/*" capture="environment">
-    </label>
-    <label>📷 รูปหลังทำ 2:
-      <input type="file" id="after2" accept="image/*">
-    </label>
+    <label>📷 รูปก่อนทำ 1: <input type="file" id="before1" accept="image/*" capture="environment"></label>
+    <label>📷 รูปก่อนทำ 2: <input type="file" id="before2" accept="image/*"></label>
+    <label>📷 รูปหลังทำ 1: <input type="file" id="after1" accept="image/*" capture="environment"></label>
+    <label>📷 รูปหลังทำ 2: <input type="file" id="after2" accept="image/*"></label>
 
     <label>สถานะ:
       <select id="status">
@@ -38,12 +30,13 @@
     <button type="submit">บันทึก</button>
   </form>
 
-  <button type="button" onclick="loadPrevious()">📂 แสดงข้อมูลเดิม</button>
+  <button type="button" onclick="editPrevious()">✏️ แก้ไขข้อมูล</button>
   <button type="button" onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
 
   <script>
     const form = document.getElementById('recordForm');
     const user = localStorage.getItem('aeUser') || '-';
+    let editingIndex = -1;
 
     async function toBase64(file) {
       return new Promise((resolve, reject) => {
@@ -54,7 +47,7 @@
       });
     }
 
-    form.onsubmit = async function(e) {
+    async function saveRecord(e) {
       e.preventDefault();
       const before1 = form.before1.files[0] ? await toBase64(form.before1.files[0]) : '';
       const before2 = form.before2.files[0] ? await toBase64(form.before2.files[0]) : '';
@@ -75,30 +68,40 @@
       };
 
       let localData = JSON.parse(localStorage.getItem("aeRecords") || "[]");
-      localData.push(record);
+      if (editingIndex >= 0) {
+        localData[editingIndex] = record;
+        alert("✅ บันทึกข้อมูลอัปเดตเรียบร้อยแล้ว");
+      } else {
+        localData.push(record);
+        alert("✅ บันทึกข้อมูลใหม่เรียบร้อยแล้ว");
+      }
       localStorage.setItem("aeRecords", JSON.stringify(localData));
-      alert("✅ บันทึกลงเครื่องเรียบร้อยแล้ว");
       form.reset();
-    };
+      editingIndex = -1;
+    }
 
-    function loadPrevious() {
+    function editPrevious() {
       const proj = form.project.value.trim();
       const plot = form.plot.value.trim();
       if (!proj || !plot) return alert("กรุณาระบุชื่อโครงการและเลขแปลงก่อน");
 
       let localData = JSON.parse(localStorage.getItem("aeRecords") || "[]");
-      const found = localData.reverse().find(r => r.project === proj && r.plot === plot);
-      if (!found) return alert("❌ ไม่พบข้อมูลเดิม");
+      const index = localData.findIndex(r => r.project === proj && r.plot === plot);
+      if (index === -1) return alert("❌ ไม่พบข้อมูลเดิม");
 
+      const found = localData[index];
       form.project.value = found.project;
       form.plot.value = found.plot;
       form.startDate.value = found.startDate;
       form.endDate.value = found.endDate;
       form.description.value = found.description;
       form.status.value = found.status;
+      editingIndex = index;
 
-      alert("📂 โหลดข้อมูลเดิมสำเร็จ กรุณาอัปเดตรูปหรือสถานะ แล้วกด 'บันทึก'");
+      alert("📂 โหลดข้อมูลเดิมสำเร็จ สามารถแก้ไขและกด 'บันทึก' เพื่ออัปเดตข้อมูล");
     }
+
+    form.addEventListener("submit", saveRecord);
   </script>
 </body>
 </html>
