@@ -1,1 +1,58 @@
-body { font-family: sans-serif; }
+body {
+  font-family: sans-serif;
+  margin: 1rem;
+  padding: 0;
+  background: #f9f9f9;
+}
+
+h1, h2, h3 {
+  color: #333;
+}
+
+form, nav, .box {
+  max-width: 600px;
+  margin: 1rem auto;
+  padding: 1rem;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+
+label {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+input, textarea, select, button {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.75rem;
+  box-sizing: border-box;
+}
+
+button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+@media screen and (max-width: 768px) {
+  body {
+    margin: 0.5rem;
+  }
+
+  form, nav, .box {
+    padding: 0.5rem;
+  }
+
+  input, textarea, select, button {
+    font-size: 1rem;
+  }
+}
