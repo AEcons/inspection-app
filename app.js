@@ -1,1 +1,1 @@
-<!-- Placeholder for app.js -->
+// JS placeholder

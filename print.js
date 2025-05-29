@@ -1,1 +1,1 @@
-<!-- Placeholder for print.js -->
+// พิมพ์รายงาน

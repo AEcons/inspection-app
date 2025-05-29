@@ -1,1 +1,1 @@
-<!-- Placeholder for service-worker.js -->
+// Service worker placeholder
