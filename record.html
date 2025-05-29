@@ -27,6 +27,14 @@
         <option value="ลูกบ้านรับมอบ">ลูกบ้านรับมอบ</option>
       </select>
     </label>
+    
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <img id="previewBefore1" src="" style="max-width:100px;">
+      <img id="previewBefore2" src="" style="max-width:100px;">
+      <img id="previewAfter1" src="" style="max-width:100px;">
+      <img id="previewAfter2" src="" style="max-width:100px;">
+    </div>
+
     <button type="submit">บันทึก</button>
   </form>
 
@@ -96,9 +104,27 @@
       form.endDate.value = found.endDate;
       form.description.value = found.description;
       form.status.value = found.status;
-      editingIndex = index;
+      document.getElementById('previewBefore1').src = found.beforeImage.split('|')[0] || '';
+document.getElementById('previewBefore2').src = found.beforeImage.split('|')[1] || '';
+document.getElementById('previewAfter1').src = found.afterImage.split('|')[0] || '';
+document.getElementById('previewAfter2').src = found.afterImage.split('|')[1] || '';
+editingIndex = index;
 
       alert("📂 โหลดข้อมูลเดิมสำเร็จ สามารถแก้ไขและกด 'บันทึก' เพื่ออัปเดตข้อมูล");
+    }
+
+    
+    // แสดง preview เมื่อผู้ใช้เลือกภาพ
+    form.before1.onchange = e => previewFile(e.target.files[0], 'previewBefore1');
+    form.before2.onchange = e => previewFile(e.target.files[0], 'previewBefore2');
+    form.after1.onchange = e => previewFile(e.target.files[0], 'previewAfter1');
+    form.after2.onchange = e => previewFile(e.target.files[0], 'previewAfter2');
+
+    function previewFile(file, imgId) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => document.getElementById(imgId).src = reader.result;
+      reader.readAsDataURL(file);
     }
 
     form.addEventListener("submit", saveRecord);
