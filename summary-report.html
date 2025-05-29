@@ -1,1 +1,36 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>รายงานสรุป</title><link rel="stylesheet" href="style.css"></head><body><h2>รายงานสรุป</h2><div id="summaryContainer"></div><script src="app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รายงานสรุป</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>รายงานสรุป</h2>
+  <div id="summaryContainer">สรุปรายการทั้งหมดของโครงการ</div>
+  <button onclick="exportSummaryAsPDF()">Export PDF</button>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    async function exportSummaryAsPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      const user = localStorage.getItem('aeUser') || '-';
+      const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAMAAAC67D+PAAAAe1BMVEUAAAD/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8tvZPhAAAAJHRSTlMAEBAgIDAwQEBQUGBgcHCAgICAoKCwsLCwwMDQ0NDg4ODw8PDxYkd6sAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnBBgIMTXUtMN2AAAAKUlEQVQI12NgQAVMDYyMDAxMDBwcHCgoKBgYGBhYmJiZGRgYGBiYGBgYGKQ4BAO7SA8C7Sc9eAAAAAElFTkSuQmCC';
+
+      doc.addImage(logo, 'PNG', 150, 10, 40, 20);
+      doc.setFontSize(16);
+      doc.text("รายงานสรุปผลโครงการ", 20, 20);
+      doc.text("ข้อมูลสรุปจะแสดงที่นี่...", 20, 30);
+
+      doc.setFontSize(12);
+      const date = new Date().toLocaleDateString('th-TH');
+      doc.text(`ผู้สั่งพิมพ์: ${user}`, 20, 270);
+      doc.text(`วันที่: ${date}`, 150, 270);
+
+      doc.save("summary-report.pdf");
+    }
+  </script>
+</body>
+</html>
