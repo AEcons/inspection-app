@@ -1,1 +1,39 @@
-<!DOCTYPE html><html><head><meta charset="UTF-8"><title>เข้าสู่ระบบ</title><link rel="stylesheet" href="style.css"></head><body><h2>เข้าสู่ระบบ</h2><form onsubmit="loginUser(event)"><input id="username" placeholder="ชื่อผู้ใช้งาน" required><button type="submit">เข้าสู่ระบบ</button></form><script>function loginUser(e) {e.preventDefault();const user = document.getElementById('username').value;localStorage.setItem('aeUser', user);window.location.href = 'index.html';}</script></body></html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h2>เข้าสู่ระบบ</h2>
+  <form onsubmit="loginUser(event)">
+    <input id="username" placeholder="ชื่อผู้ใช้งาน" list="userList" required>
+    <datalist id="userList"></datalist>
+    <button type="submit">เข้าสู่ระบบ</button>
+  </form>
+
+  <script>
+    const storedUsers = JSON.parse(localStorage.getItem('aeUserList') || '[]');
+    const datalist = document.getElementById('userList');
+    storedUsers.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u;
+      datalist.appendChild(opt);
+    });
+
+    function loginUser(e) {
+      e.preventDefault();
+      const user = document.getElementById('username').value.trim();
+      if (!user) return alert('กรุณากรอกชื่อผู้ใช้งาน');
+      localStorage.setItem('aeUser', user);
+      if (!storedUsers.includes(user)) {
+        storedUsers.push(user);
+        localStorage.setItem('aeUserList', JSON.stringify(storedUsers));
+      }
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>
