@@ -108,7 +108,14 @@ form.project.value = found.project;
       form.endDate.value = found.endDate;
       form.description.value = found.description;
       form.status.value = found.status;
-      document.getElementById('previewBefore1').src = found.beforeImage.split('|')[0] || '';
+      
+      const beforeImages = found.beforeImage.split('|');
+      const afterImages = found.afterImage.split('|');
+      document.getElementById('previewBefore1').src = beforeImages[0] || '';
+      document.getElementById('previewBefore2').src = beforeImages[1] || '';
+      document.getElementById('previewAfter1').src = afterImages[0] || '';
+      document.getElementById('previewAfter2').src = afterImages[1] || '';
+
 document.getElementById('previewBefore2').src = found.beforeImage.split('|')[1] || '';
 document.getElementById('previewAfter1').src = found.afterImage.split('|')[0] || '';
 document.getElementById('previewAfter2').src = found.afterImage.split('|')[1] || '';
