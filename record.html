@@ -98,7 +98,11 @@
       if (index === -1) return alert("❌ ไม่พบข้อมูลเดิม");
 
       const found = localData[index];
-      form.project.value = found.project;
+      document.getElementById('previewBefore1').src = '';
+document.getElementById('previewBefore2').src = '';
+document.getElementById('previewAfter1').src = '';
+document.getElementById('previewAfter2').src = '';
+form.project.value = found.project;
       form.plot.value = found.plot;
       form.startDate.value = found.startDate;
       form.endDate.value = found.endDate;
@@ -114,6 +118,17 @@ editingIndex = index;
     }
 
     
+    
+    function previewFile(file, imgId) {
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        const img = document.getElementById(imgId);
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
     // แสดง preview เมื่อผู้ใช้เลือกภาพ
     form.before1.onchange = e => previewFile(e.target.files[0], 'previewBefore1');
     form.before2.onchange = e => previewFile(e.target.files[0], 'previewBefore2');
