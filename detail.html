@@ -1,1 +1,37 @@
-<!DOCTYPE html><html><head><title>หน้ารายละเอียด</title></head><body><h1>หน้ารายละเอียด</h1></body></html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>หน้ารายละเอียด</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>หน้ารายละเอียด</h1>
+  <div id="detailHeader"></div>
+  <div id="detailList"></div>
+  <button onclick="location.href='report.html'">🔙 กลับหน้ารายงาน</button>
+
+  <script>
+    const project = localStorage.getItem('aeSelectedProject');
+    const plot = localStorage.getItem('aeSelectedPlot');
+    const records = JSON.parse(localStorage.getItem('aeRecords') || '[]')
+      .filter(r => r.project === project && r.plot === plot);
+
+    document.getElementById('detailHeader').innerHTML = `<h3>โครงการ: ${project} - แปลง: ${plot}</h3>`;
+
+    document.getElementById('detailList').innerHTML = records.map((r, i) => `
+      <div style="border:1px solid #ccc; margin:10px; padding:10px;">
+        <b>${i + 1}.</b> รายการ: ${r.description}<br>
+        วันที่: ${r.startDate} ถึง ${r.endDate || '-'}<br>
+        สถานะ: ${r.status}<br>
+        ผู้บันทึก: ${r.user}<br>
+        <div style="margin-top:5px;">
+          <img src="${r.beforeImage || ''}" alt="รูปก่อนทำ" width="100" onerror="this.style.display='none'">
+          <img src="${r.afterImage || ''}" alt="รูปหลังทำ" width="100" onerror="this.style.display='none'">
+        </div>
+      </div>
+    `).join('');
+  </script>
+</body>
+</html>

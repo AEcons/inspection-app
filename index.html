@@ -1,1 +1,26 @@
-<!DOCTYPE html><html><head><title>หน้าหลัก</title></head><body><h1>แอพตรวจงาน</h1></body></html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เมนูหลัก</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>AE INSPECTOR - เมนูหลัก</h1>
+  <p id="welcomeUser"></p>
+  <nav>
+    <button onclick="location.href='record.html'">➕ หน้าบันทึก</button>
+    <button onclick="location.href='report.html'">📋 หน้ารายงาน</button>
+    <button onclick="location.href='summary-report.html'">📊 หน้ารายงานสรุป</button>
+  </nav>
+  <script>
+    const user = localStorage.getItem('aeUser');
+    if (user) {
+      document.getElementById('welcomeUser').innerText = `ยินดีต้อนรับ: ${user}`;
+    } else {
+      location.href = 'login.html';
+    }
+  </script>
+</body>
+</html>

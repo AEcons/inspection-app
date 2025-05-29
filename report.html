@@ -8,29 +8,49 @@
 </head>
 <body>
   <h1>หน้ารายงาน</h1>
-  <div id="reportContent">ข้อมูลรายงานของคุณจะแสดงที่นี่...</div>
-  <button onclick="exportReportAsPDF()">Export PDF</button>
+  <label for="projectSelect">เลือกโครงการ:</label>
+  <select id="projectSelect" onchange="filterByProject()"></select>
+  <div id="reportTable"></div>
+  <button onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
 
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script>
-    async function exportReportAsPDF() {
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      const user = localStorage.getItem('aeUser') || '-';
-      const logo = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAoAAAAKCAMAAAC67D+PAAAAe1BMVEUAAAD/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////8tvZPhAAAAJHRSTlMAEBAgIDAwQEBQUGBgcHCAgICAoKCwsLCwwMDQ0NDg4ODw8PDxYkd6sAAAAJcEhZcwAACxMAAAsTAQCanBgAAAAHdElNRQfnBBgIMTXUtMN2AAAAKUlEQVQI12NgQAVMDYyMDAxMDBwcHCgoKBgYGBhYmJiZGRgYGBiYGBgYGKQ4BAO7SA8C7Sc9eAAAAAElFTkSuQmCC';
-
-      doc.addImage(logo, 'PNG', 150, 10, 40, 20);
-      doc.setFontSize(16);
-      doc.text("รายงานการตรวจงาน", 20, 20);
-      doc.text("ข้อมูลรายงานจะแสดงที่นี่...", 20, 30);
-
-      doc.setFontSize(12);
-      const date = new Date().toLocaleDateString('th-TH');
-      doc.text(`ผู้สั่งพิมพ์: ${user}`, 20, 270);
-      doc.text(`วันที่: ${date}`, 150, 270);
-
-      doc.save("report.pdf");
+    let records = [];
+    function loadProjects() {
+      records = JSON.parse(localStorage.getItem('aeRecords') || '[]');
+      const projects = [...new Set(records.map(r => r.project))];
+      const select = document.getElementById('projectSelect');
+      select.innerHTML = '<option value="">-- เลือกโครงการ --</option>' +
+        projects.map(p => `<option value="${p}">${p}</option>`).join('');
     }
+
+    function filterByProject() {
+      const project = document.getElementById('projectSelect').value;
+      const table = document.getElementById('reportTable');
+      if (!project) return table.innerHTML = '';
+      const filtered = records.filter(r => r.project === project);
+
+      const grouped = {};
+      filtered.forEach(r => {
+        if (!grouped[r.plot]) grouped[r.plot] = [];
+        grouped[r.plot].push(r);
+      });
+
+      table.innerHTML = '<h3>รายการแปลง</h3>' + Object.entries(grouped).map(([plot, items]) => {
+        const status = items[items.length - 1].status;
+        return `<div>
+          🏠 <b>แปลง ${plot}</b> - สถานะ: ${status} - จำนวน ${items.length} รายการ
+          <button onclick="viewDetail('${project}', '${plot}')">รายละเอียด</button>
+        </div>`;
+      }).join('');
+    }
+
+    function viewDetail(project, plot) {
+      localStorage.setItem('aeSelectedProject', project);
+      localStorage.setItem('aeSelectedPlot', plot);
+      window.location.href = 'detail.html';
+    }
+
+    window.onload = loadProjects;
   </script>
 </body>
 </html>
