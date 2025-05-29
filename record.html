@@ -15,22 +15,30 @@
     <label>วันที่เสร็จ: <input type="date" id="endDate"></label>
     <label>รายการงาน: <textarea id="description" required></textarea></label>
 
-    
-    <label style="display:block">
-      📷 รูปก่อนทำ 1:
-      <input type="file" id="before1 capture="environment"></label>
-    
-    <label style="display:block">
-      📷 รูปก่อนทำ 2:
-      <input type="file" id="before2></label>
-    
-    <label style="display:block">
-      📷 รูปหลังทำ 1:
-      <input type="file" id="after1 capture="environment"></label>
-    
-    <label style="display:block">
-      📷 รูปหลังทำ 2:
-      <input type="file" id="after2></label>
+    <label>📷 รูปก่อนทำ 1:
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="file" id="before1" accept="image/*" capture="environment" />
+        <img id="previewBefore1" src="" style="width:100px; border:1px solid #ccc;" />
+      </div>
+    </label>
+    <label>📷 รูปก่อนทำ 2:
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="file" id="before2" accept="image/*" />
+        <img id="previewBefore2" src="" style="width:100px; border:1px solid #ccc;" />
+      </div>
+    </label>
+    <label>📷 รูปหลังทำ 1:
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="file" id="after1" accept="image/*" capture="environment" />
+        <img id="previewAfter1" src="" style="width:100px; border:1px solid #ccc;" />
+      </div>
+    </label>
+    <label>📷 รูปหลังทำ 2:
+      <div style="display:flex; align-items:center; gap:10px;">
+        <input type="file" id="after2" accept="image/*" />
+        <img id="previewAfter2" src="" style="width:100px; border:1px solid #ccc;" />
+      </div>
+    </label>
 
     <label>สถานะ:
       <select id="status">
@@ -39,14 +47,6 @@
         <option value="ลูกบ้านรับมอบ">ลูกบ้านรับมอบ</option>
       </select>
     </label>
-    
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <img id="previewBefore1" src="" style="max-width:100px;">
-      <img id="previewBefore2" src="" style="max-width:100px;">
-      <img id="previewAfter1" src="" style="max-width:100px;">
-      <img id="previewAfter2" src="" style="max-width:100px;">
-    </div>
-
     <button type="submit">บันทึก</button>
   </form>
 
@@ -58,6 +58,19 @@
     const user = localStorage.getItem('aeUser') || '-';
     let editingIndex = -1;
 
+    function previewFile(input, imgId) {
+      if (!input.files[0]) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        document.getElementById(imgId).src = reader.result;
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
+
+    ["before1", "before2", "after1", "after2"].forEach(id => {
+      form[id].addEventListener("change", e => previewFile(e.target, "preview" + id.charAt(0).toUpperCase() + id.slice(1)));
+    });
+
     async function toBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -67,12 +80,12 @@
       });
     }
 
-    async function saveRecord(e) {
+    form.onsubmit = async function(e) {
       e.preventDefault();
-      const before1 = form.before1.files[0] ? await toBase64(form.before1.files[0]) : '';
-      const before2 = form.before2.files[0] ? await toBase64(form.before2.files[0]) : '';
-      const after1 = form.after1.files[0] ? await toBase64(form.after1.files[0]) : '';
-      const after2 = form.after2.files[0] ? await toBase64(form.after2.files[0]) : '';
+      const before1 = form.before1.files[0] ? await toBase64(form.before1.files[0]) : document.getElementById("previewBefore1").src;
+      const before2 = form.before2.files[0] ? await toBase64(form.before2.files[0]) : document.getElementById("previewBefore2").src;
+      const after1 = form.after1.files[0] ? await toBase64(form.after1.files[0]) : document.getElementById("previewAfter1").src;
+      const after2 = form.after2.files[0] ? await toBase64(form.after2.files[0]) : document.getElementById("previewAfter2").src;
 
       const record = {
         project: form.project.value.trim(),
@@ -80,88 +93,54 @@
         startDate: form.startDate.value,
         endDate: form.endDate.value,
         description: form.description.value.trim(),
-        beforeImage: [before1, before2].filter(x => x).join('|'),
-        afterImage: [after1, after2].filter(x => x).join('|'),
+        beforeImage: [before1, before2].filter(Boolean).join('|'),
+        afterImage: [after1, after2].filter(Boolean).join('|'),
         status: form.status.value,
         user,
         timestamp: new Date().toISOString()
       };
 
-      let localData = JSON.parse(localStorage.getItem("aeRecords") || "[]");
+      let records = JSON.parse(localStorage.getItem("aeRecords") || "[]");
       if (editingIndex >= 0) {
-        localData[editingIndex] = record;
-        alert("✅ บันทึกข้อมูลอัปเดตเรียบร้อยแล้ว");
+        records[editingIndex] = record;
+        alert("✅ ข้อมูลได้รับการอัปเดตเรียบร้อย");
       } else {
-        localData.push(record);
-        alert("✅ บันทึกข้อมูลใหม่เรียบร้อยแล้ว");
+        records.push(record);
+        alert("✅ บันทึกข้อมูลเรียบร้อยแล้ว");
       }
-      localStorage.setItem("aeRecords", JSON.stringify(localData));
-      form.reset();
+      localStorage.setItem("aeRecords", JSON.stringify(records));
       editingIndex = -1;
-    }
+      form.reset();
+      ["previewBefore1", "previewBefore2", "previewAfter1", "previewAfter2"].forEach(id => document.getElementById(id).src = "");
+    };
 
     function editPrevious() {
       const proj = form.project.value.trim();
       const plot = form.plot.value.trim();
-      if (!proj || !plot) return alert("กรุณาระบุชื่อโครงการและเลขแปลงก่อน");
+      if (!proj || !plot) return alert("กรุณาระบุชื่อโครงการและเลขแปลง");
 
-      let localData = JSON.parse(localStorage.getItem("aeRecords") || "[]");
-      const index = localData.findIndex(r => r.project === proj && r.plot === plot);
+      const records = JSON.parse(localStorage.getItem("aeRecords") || "[]");
+      const index = records.findIndex(r => r.project === proj && r.plot === plot);
       if (index === -1) return alert("❌ ไม่พบข้อมูลเดิม");
 
-      const found = localData[index];
-      document.getElementById('previewBefore1').src = '';
-document.getElementById('previewBefore2').src = '';
-document.getElementById('previewAfter1').src = '';
-document.getElementById('previewAfter2').src = '';
-form.project.value = found.project;
-      form.plot.value = found.plot;
-      form.startDate.value = found.startDate;
-      form.endDate.value = found.endDate;
-      form.description.value = found.description;
-      form.status.value = found.status;
-      
-      const beforeImages = found.beforeImage.split('|');
-      const afterImages = found.afterImage.split('|');
-      document.getElementById('previewBefore1').src = beforeImages[0] || '';
-      document.getElementById('previewBefore2').src = beforeImages[1] || '';
-      document.getElementById('previewAfter1').src = afterImages[0] || '';
-      document.getElementById('previewAfter2').src = afterImages[1] || '';
+      const r = records[index];
+      form.project.value = r.project;
+      form.plot.value = r.plot;
+      form.startDate.value = r.startDate;
+      form.endDate.value = r.endDate;
+      form.description.value = r.description;
+      form.status.value = r.status;
 
-document.getElementById('previewBefore2').src = found.beforeImage.split('|')[1] || '';
-document.getElementById('previewAfter1').src = found.afterImage.split('|')[0] || '';
-document.getElementById('previewAfter2').src = found.afterImage.split('|')[1] || '';
-editingIndex = index;
+      const [b1, b2] = r.beforeImage.split('|');
+      const [a1, a2] = r.afterImage.split('|');
+      document.getElementById("previewBefore1").src = b1 || '';
+      document.getElementById("previewBefore2").src = b2 || '';
+      document.getElementById("previewAfter1").src = a1 || '';
+      document.getElementById("previewAfter2").src = a2 || '';
+      editingIndex = index;
 
-      alert("📂 โหลดข้อมูลเดิมสำเร็จ สามารถแก้ไขและกด 'บันทึก' เพื่ออัปเดตข้อมูล");
+      alert("📂 โหลดข้อมูลเดิมเรียบร้อยแล้ว");
     }
-
-    
-    
-    function previewFile(file, imgId) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const img = document.getElementById(imgId);
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    }
-
-    // แสดง preview เมื่อผู้ใช้เลือกภาพ
-    form.before1.onchange = e => previewFile(e.target.files[0], 'previewBefore1');
-    form.before2.onchange = e => previewFile(e.target.files[0], 'previewBefore2');
-    form.after1.onchange = e => previewFile(e.target.files[0], 'previewAfter1');
-    form.after2.onchange = e => previewFile(e.target.files[0], 'previewAfter2');
-
-    function previewFile(file, imgId) {
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => document.getElementById(imgId).src = reader.result;
-      reader.readAsDataURL(file);
-    }
-
-    form.addEventListener("submit", saveRecord);
   </script>
 </body>
 </html>
