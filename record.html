@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>หน้าบันทึก (Offline)</title>
+  <title>หน้าบันทึก</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>บันทึกงาน (Offline Mode)</h1>
+  <h1>บันทึกงาน</h1>
   <form id="recordForm">
     <label>ชื่อโครงการ: <input id="project" required></label>
     <label>เลขแปลง: <input id="plot" required></label>
@@ -15,10 +15,18 @@
     <label>วันที่เสร็จ: <input type="date" id="endDate"></label>
     <label>รายการงาน: <textarea id="description" required></textarea></label>
 
-    <label>📷 รูปก่อนทำ 1: <input type="file" id="before1" accept="image/*" capture="environment"></label>
-    <label>📷 รูปก่อนทำ 2: <input type="file" id="before2" accept="image/*" capture="environment"></label>
-    <label>📷 รูปหลังทำ 1: <input type="file" id="after1" accept="image/*" capture="environment"></label>
-    <label>📷 รูปหลังทำ 2: <input type="file" id="after2" accept="image/*" capture="environment"></label>
+    <label>📷 รูปก่อนทำ 1:
+      <input type="file" id="before1" accept="image/*" capture="environment">
+    </label>
+    <label>📷 รูปก่อนทำ 2:
+      <input type="file" id="before2" accept="image/*">
+    </label>
+    <label>📷 รูปหลังทำ 1:
+      <input type="file" id="after1" accept="image/*" capture="environment">
+    </label>
+    <label>📷 รูปหลังทำ 2:
+      <input type="file" id="after2" accept="image/*">
+    </label>
 
     <label>สถานะ:
       <select id="status">
@@ -47,7 +55,6 @@
     }
 
     form.onsubmit = async function(e) {
-      console.log("บันทึกข้อมูล...");
       e.preventDefault();
       const before1 = form.before1.files[0] ? await toBase64(form.before1.files[0]) : '';
       const before2 = form.before2.files[0] ? await toBase64(form.before2.files[0]) : '';
@@ -70,16 +77,18 @@
       let localData = JSON.parse(localStorage.getItem("aeRecords") || "[]");
       localData.push(record);
       localStorage.setItem("aeRecords", JSON.stringify(localData));
-      alert("บันทึกลงเครื่องเรียบร้อยแล้ว");
+      alert("✅ บันทึกลงเครื่องเรียบร้อยแล้ว");
       form.reset();
     };
 
     function loadPrevious() {
-      const proj = prompt("กรอกชื่อโครงการ:");
-      const plot = prompt("กรอกเลขแปลง:");
+      const proj = form.project.value.trim();
+      const plot = form.plot.value.trim();
+      if (!proj || !plot) return alert("กรุณาระบุชื่อโครงการและเลขแปลงก่อน");
+
       let localData = JSON.parse(localStorage.getItem("aeRecords") || "[]");
       const found = localData.reverse().find(r => r.project === proj && r.plot === plot);
-      if (!found) return alert("ไม่พบข้อมูลเดิม");
+      if (!found) return alert("❌ ไม่พบข้อมูลเดิม");
 
       form.project.value = found.project;
       form.plot.value = found.plot;
@@ -88,7 +97,7 @@
       form.description.value = found.description;
       form.status.value = found.status;
 
-      alert("โหลดข้อมูลเดิมสำเร็จ กรุณาอัปเดตรูปหรือสถานะ แล้วกด 'บันทึก'");
+      alert("📂 โหลดข้อมูลเดิมสำเร็จ กรุณาอัปเดตรูปหรือสถานะ แล้วกด 'บันทึก'");
     }
   </script>
 </body>
