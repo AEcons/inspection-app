@@ -133,10 +133,13 @@
 
       const [b1, b2] = r.beforeImage.split('|');
       const [a1, a2] = r.afterImage.split('|');
-      document.getElementById("previewBefore1").src = b1 || '';
-      document.getElementById("previewBefore2").src = b2 || '';
-      document.getElementById("previewAfter1").src = a1 || '';
-      document.getElementById("previewAfter2").src = a2 || '';
+      console.log("โหลดภาพจากข้อมูล:", r.beforeImage, r.afterImage);
+      const [b1, b2] = (r.beforeImage || '').split('|');
+      const [a1, a2] = (r.afterImage || '').split('|');
+      document.getElementById("previewBefore1").src = b1 ? b1 : '';
+      document.getElementById("previewBefore2").src = b2 ? b2 : '';
+      document.getElementById("previewAfter1").src = a1 ? a1 : '';
+      document.getElementById("previewAfter2").src = a2 ? a2 : '';
       editingIndex = index;
 
       alert("📂 โหลดข้อมูลเดิมเรียบร้อยแล้ว");
