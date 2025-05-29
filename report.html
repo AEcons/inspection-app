@@ -23,6 +23,7 @@
       const select = document.getElementById('projectSelect');
       select.innerHTML = '<option value="all">-- ดูทุกโครงการ --</option>' +
         projects.map(p => `<option value="${p}">${p}</option>`).join('');
+      filterByProject(); // แสดง All Project ตั้งต้น
     }
 
     function filterByProject() {
@@ -31,7 +32,14 @@
       const header = document.getElementById('selectedProjectTitle');
 
       const filtered = project === 'all' ? records : records.filter(r => r.project === project);
-      header.innerHTML = project === 'all' ? "ข้อมูลรายแปลงของทุกโครงการ" : `ข้อมูลรายแปลงของโครงการ: ${project}`;
+      header.innerHTML = project === 'all'
+        ? "ข้อมูลรายแปลงของทุกโครงการ"
+        : `ข้อมูลรายแปลงของโครงการ: ${project}`;
+
+      if (filtered.length === 0) {
+        table.innerHTML = "<p>ไม่พบข้อมูล</p>";
+        return;
+      }
 
       const grouped = {};
       filtered.forEach(r => {
