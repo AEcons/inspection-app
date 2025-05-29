@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>หน้าบันทึก</title>
+  <title>หน้าบันทึก (Offline)</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>บันทึกงาน</h1>
+  <h1>บันทึกงาน (Offline Mode)</h1>
   <form id="recordForm">
     <label>ชื่อโครงการ: <input id="project" required></label>
     <label>เลขแปลง: <input id="plot" required></label>
@@ -62,27 +62,22 @@
         beforeImage: [before1, before2].filter(x => x).join('|'),
         afterImage: [after1, after2].filter(x => x).join('|'),
         status: form.status.value,
-        user
+        user,
+        timestamp: new Date().toISOString()
       };
 
-      const response = await fetch("https://script.google.com/macros/s/AKfycbz6TxFLY4L6kX15soOUBd-jRMY5cBB80jZtEDhJkkBq4TRLW6EhdmvxOPizJSo5w3jzHg/exec", {
-        method: "POST",
-        body: JSON.stringify([record]),
-        headers: { "Content-Type": "application/json" }
-      });
-
-      const text = await response.text();
-      alert(text);
+      let localData = JSON.parse(localStorage.getItem("aeRecords") || "[]");
+      localData.push(record);
+      localStorage.setItem("aeRecords", JSON.stringify(localData));
+      alert("บันทึกลงเครื่องเรียบร้อยแล้ว");
       form.reset();
     };
 
-    async function loadPrevious() {
-      const url = "https://script.google.com/macros/s/AKfycbz6TxFLY4L6kX15soOUBd-jRMY5cBB80jZtEDhJkkBq4TRLW6EhdmvxOPizJSo5w3jzHg/exec";
-      const res = await fetch(url);
-      const records = await res.json();
+    function loadPrevious() {
       const proj = prompt("กรอกชื่อโครงการ:");
       const plot = prompt("กรอกเลขแปลง:");
-      const found = records.reverse().find(r => r.project === proj && r.plot === plot);
+      let localData = JSON.parse(localStorage.getItem("aeRecords") || "[]");
+      const found = localData.reverse().find(r => r.project === proj && r.plot === plot);
       if (!found) return alert("ไม่พบข้อมูลเดิม");
 
       form.project.value = found.project;
@@ -92,7 +87,7 @@
       form.description.value = found.description;
       form.status.value = found.status;
 
-      alert("โหลดข้อมูลเดิมสำเร็จ กรุณาเพิ่มรูปหลังทำหรือปรับสถานะ แล้วกด 'บันทึก'");
+      alert("โหลดข้อมูลเดิมสำเร็จ กรุณาอัปเดตรูปหรือสถานะ แล้วกด 'บันทึก'");
     }
   </script>
 </body>
