@@ -30,8 +30,8 @@
     <button type="submit">บันทึก</button>
   </form>
 
-  <button onclick="loadPrevious()">📂 แสดงข้อมูลเดิม</button>
-  <button onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
+  <button type="button" onclick="loadPrevious()">📂 แสดงข้อมูลเดิม</button>
+  <button type="button" onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
 
   <script>
     const form = document.getElementById('recordForm');
@@ -47,6 +47,7 @@
     }
 
     form.onsubmit = async function(e) {
+      console.log("บันทึกข้อมูล...");
       e.preventDefault();
       const before1 = form.before1.files[0] ? await toBase64(form.before1.files[0]) : '';
       const before2 = form.before2.files[0] ? await toBase64(form.before2.files[0]) : '';
