@@ -1,61 +1,60 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>หน้าบันทึก</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>หน้าบันทึก</h1>
-
+  <h1>บันทึกงาน</h1>
   <form id="recordForm">
-    <label>โครงการ: <input type="text" id="project" required></label><br>
-    <label>แปลง: <input type="text" id="plot" required></label><br>
-    <label>วันที่เริ่ม: <input type="date" id="startDate" required></label><br>
-    <label>วันที่เสร็จ: <input type="date" id="endDate"></label><br>
-    <label>รายการ: <textarea id="description" required></textarea></label><br>
-    <label>รูปก่อนทำ: <input type="file" id="beforeImage" accept="image/*"></label><br>
-    <label>รูปหลังทำ: <input type="file" id="afterImage" accept="image/*"></label><br>
+    <label>ชื่อโครงการ: <input id="project" required></label>
+    <label>เลขแปลง: <input id="plot" required></label>
+    <label>วันที่เริ่ม: <input type="date" id="startDate" required></label>
+    <label>วันที่เสร็จ: <input type="date" id="endDate"></label>
+    <label>รายการงาน: <textarea id="description" required></textarea></label>
+    <label>รูปก่อนทำ: <input type="text" id="beforeImage" placeholder="URL รูปก่อนทำ" /></label>
+    <label>รูปหลังทำ: <input type="text" id="afterImage" placeholder="URL รูปหลังทำ" /></label>
     <label>สถานะ:
       <select id="status">
-        <option>อยู่ระหว่างแก้ไข</option>
-        <option>QC Pass</option>
-        <option>ลูกบ้านรับมอบ</option>
+        <option value="อยู่ระหว่างแก้ไข">อยู่ระหว่างแก้ไข</option>
+        <option value="QC ผ่าน">QC ผ่าน</option>
+        <option value="ลูกบ้านรับมอบ">ลูกบ้านรับมอบ</option>
       </select>
-    </label><br><br>
-    <button type="button" onclick="saveRecord()">💾 บันทึกรายการ</button>
-    <button type="button" onclick="loadRecords()">📂 แสดงข้อมูลเดิม</button>
-    <button type="button" onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
+    </label>
+    <button type="submit">บันทึก</button>
   </form>
-
-  <div id="recordList"></div>
+  <button onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
 
   <script>
-    function saveRecord() {
-      const record = {
-        project: document.getElementById('project').value,
-        plot: document.getElementById('plot').value,
-        startDate: document.getElementById('startDate').value,
-        endDate: document.getElementById('endDate').value,
-        description: document.getElementById('description').value,
-        status: document.getElementById('status').value,
-        user: localStorage.getItem('aeUser') || '-',
-        timestamp: new Date().toISOString()
-      };
-      const data = JSON.parse(localStorage.getItem('aeRecords') || '[]');
-      data.push(record);
-      localStorage.setItem('aeRecords', JSON.stringify(data));
-      alert('✅ บันทึกข้อมูลเรียบร้อย');
-    }
+    const form = document.getElementById('recordForm');
+    const user = localStorage.getItem('aeUser') || '-';
 
-    function loadRecords() {
-      const data = JSON.parse(localStorage.getItem('aeRecords') || '[]');
-      const container = document.getElementById('recordList');
-      container.innerHTML = '<h3>รายการที่เคยบันทึก</h3>' + data.map((r, i) => 
-        `<div><b>${i+1}.</b> [${r.project}] แปลง ${r.plot} - ${r.status} (${r.startDate})</div>`
-      ).join('');
-    }
+    form.onsubmit = async function(e) {
+      e.preventDefault();
+      const record = {
+        project: form.project.value.trim(),
+        plot: form.plot.value.trim(),
+        startDate: form.startDate.value,
+        endDate: form.endDate.value,
+        description: form.description.value.trim(),
+        beforeImage: form.beforeImage.value.trim(),
+        afterImage: form.afterImage.value.trim(),
+        status: form.status.value,
+        user
+      };
+      const response = await fetch("https://script.google.com/macros/s/AKfycbz6TxFLY4L6kX15soOUBd-jRMY5cBB80jZtEDhJkkBq4TRLW6EhdmvxOPizJSo5w3jzHg/exec", {
+        method: "POST",
+        body: JSON.stringify([record]),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      const text = await response.text();
+      alert(text);
+      form.reset();
+    };
   </script>
 </body>
 </html>
