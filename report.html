@@ -15,23 +15,29 @@
   <button onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
 
   <script>
-    let records = [];
+    let allRecords = [];
 
-    function loadProjects() {
-      records = JSON.parse(localStorage.getItem('aeRecords') || '[]');
-      const projects = [...new Set(records.map(r => r.project))];
-      const select = document.getElementById('projectSelect');
-      select.innerHTML = '<option value="all">-- ดูทุกโครงการ --</option>' +
-        projects.map(p => `<option value="${p}">${p}</option>`).join('');
-      filterByProject(); // แสดง All Project ตั้งต้น
+    async function loadData() {
+      const url = "https://script.google.com/macros/s/AKfycbz6TxFLY4L6kX15soOUBd-jRMY5cBB80jZtEDhJkkBq4TRLW6EhdmvxOPizJSo5w3jzHg/exec";
+      try {
+        const res = await fetch(url);
+        allRecords = await res.json();
+        const projects = [...new Set(allRecords.map(r => r.project))];
+        const select = document.getElementById('projectSelect');
+        select.innerHTML = '<option value="all">-- ดูทุกโครงการ --</option>' +
+          projects.map(p => `<option value="${p}">${p}</option>`).join('');
+        filterByProject();
+      } catch (err) {
+        alert("ไม่สามารถโหลดข้อมูลได้: " + err);
+      }
     }
 
     function filterByProject() {
       const project = document.getElementById('projectSelect').value;
       const table = document.getElementById('reportTable');
       const header = document.getElementById('selectedProjectTitle');
+      const filtered = project === 'all' ? allRecords : allRecords.filter(r => r.project === project);
 
-      const filtered = project === 'all' ? records : records.filter(r => r.project === project);
       header.innerHTML = project === 'all'
         ? "ข้อมูลรายแปลงของทุกโครงการ"
         : `ข้อมูลรายแปลงของโครงการ: ${project}`;
@@ -50,7 +56,7 @@
 
       table.innerHTML = Object.entries(grouped).map(([key, items]) => {
         const [proj, plot] = key.split('||');
-        const status = items[items.length - 1].status;
+        const status = items[items.length - 1].status || "-";
         return `<div>
           🏠 <b>โครงการ: ${proj} - แปลง ${plot}</b> - สถานะ: ${status} - จำนวน ${items.length} รายการ
           <button onclick="viewDetail('${proj}', '${plot}')">รายละเอียด</button>
@@ -64,7 +70,7 @@
       window.location.href = 'detail.html';
     }
 
-    window.onload = loadProjects;
+    window.onload = loadData;
   </script>
 </body>
 </html>
