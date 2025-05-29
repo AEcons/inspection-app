@@ -1,1 +1,1 @@
-// JS logic จะเขียนเพิ่มเติมในเวอร์ชันต่อไป
+document.addEventListener('DOMContentLoaded', function () { });

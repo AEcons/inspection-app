@@ -1,1 +1,1 @@
-// พิมพ์รายงาน
+function printDetail() { window.print(); }
