@@ -2,8 +2,8 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>เข้าสู่ระบบ</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -13,26 +13,57 @@
     <datalist id="userList"></datalist>
     <button type="submit">เข้าสู่ระบบ</button>
   </form>
+  <button onclick="editUsername()">แก้ไขชื่อผู้ใช้งาน</button>
 
   <script>
-    const storedUsers = JSON.parse(localStorage.getItem('aeUserList') || '[]');
+    const USER_KEY = 'aeUserList';
+    const CURRENT_USER = 'aeUser';
+    const PASSWORD = '211421'; // รหัสลับ (ไม่แสดงในหน้าเว็บ)
+
+    const userList = JSON.parse(localStorage.getItem(USER_KEY) || '[]');
     const datalist = document.getElementById('userList');
-    storedUsers.forEach(u => {
-      const opt = document.createElement('option');
-      opt.value = u;
-      datalist.appendChild(opt);
+
+    // โหลดรายชื่อผู้ใช้งานเดิม
+    userList.forEach(name => {
+      const option = document.createElement('option');
+      option.value = name;
+      datalist.appendChild(option);
     });
 
     function loginUser(e) {
       e.preventDefault();
-      const user = document.getElementById('username').value.trim();
-      if (!user) return alert('กรุณากรอกชื่อผู้ใช้งาน');
-      localStorage.setItem('aeUser', user);
-      if (!storedUsers.includes(user)) {
-        storedUsers.push(user);
-        localStorage.setItem('aeUserList', JSON.stringify(storedUsers));
+      const username = document.getElementById('username').value.trim();
+      if (!username) return alert("กรุณากรอกชื่อผู้ใช้งาน");
+
+      if (!userList.includes(username)) {
+        userList.push(username);
+        localStorage.setItem(USER_KEY, JSON.stringify(userList));
       }
+
+      localStorage.setItem(CURRENT_USER, username);
       window.location.href = 'index.html';
+    }
+
+    function editUsername() {
+      const input = prompt("กรอกรหัสเพื่อแก้ไขชื่อผู้ใช้งาน:");
+      if (input !== PASSWORD) {
+        alert("รหัสไม่ถูกต้อง");
+        return;
+      }
+
+      const newName = prompt("กรอกชื่อใหม่:");
+      if (!newName) return;
+
+      const oldName = document.getElementById('username').value.trim();
+      if (!oldName || !userList.includes(oldName)) {
+        alert("กรุณาเลือกชื่อเดิมที่ต้องการเปลี่ยนก่อน");
+        return;
+      }
+
+      const updatedList = userList.map(name => name === oldName ? newName : name);
+      localStorage.setItem(USER_KEY, JSON.stringify(updatedList));
+      localStorage.setItem(CURRENT_USER, newName);
+      location.reload();
     }
   </script>
 </body>
