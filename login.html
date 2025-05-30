@@ -1,74 +1,99 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เข้าสู่ระบบ</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>เข้าสู่ระบบ - AE Inspector</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="login-container">
-    <h2>เข้าสู่ระบบ</h2>
-    <form onsubmit="loginUser(event)">
-      <input id="username" placeholder="ชื่อผู้ใช้งาน" list="userList" required>
-      <datalist id="userList"></datalist>
-      <button type="submit">เข้าสู่ระบบ</button>
-    </form>
-    <div class="account-options">
-      <button onclick="promptRenameUser()">เปลี่ยนชื่อผู้ใช้งาน</button>
-      <button onclick="promptDeleteUser()">ลบบัญชีผู้ใช้งาน</button>
+  <div class="container">
+    <h2>เข้าสู่ระบบ AE Inspector</h2>
+
+    <label for="username">ชื่อผู้ใช้งาน</label>
+    <select id="username" onchange="onSelectUser()">
+      <option value="">-- เลือกชื่อผู้ใช้ --</option>
+    </select>
+
+    <button onclick="showEditName()">เปลี่ยนชื่อผู้ใช้</button>
+    <div id="editForm" style="display:none;">
+      <input type="text" id="newUsername" placeholder="ชื่อใหม่" />
+      <input type="password" id="editPassword" placeholder="รหัสผ่าน (211421)" />
+      <button onclick="saveNewName()">บันทึกชื่อใหม่</button>
+      <button onclick="deleteUser()">ลบบัญชีนี้</button>
     </div>
+
+    <button onclick="login()">เข้าสู่ระบบ</button>
   </div>
 
   <script>
-    const storedUsers = JSON.parse(localStorage.getItem('aeUserList') || '[]');
-    const datalist = document.getElementById('userList');
-    storedUsers.forEach(u => {
-      const opt = document.createElement('option');
-      opt.value = u;
-      datalist.appendChild(opt);
-    });
+    const passcode = "211421";
 
-    function loginUser(e) {
-      e.preventDefault();
-      const user = document.getElementById('username').value.trim();
-      if (!user) return alert('กรุณากรอกชื่อผู้ใช้งาน');
-      localStorage.setItem('aeUser', user);
-      if (!storedUsers.includes(user)) {
-        storedUsers.push(user);
-        localStorage.setItem('aeUserList', JSON.stringify(storedUsers));
-      }
-      window.location.href = 'index.html';
+    function loadUsernames() {
+      const saved = JSON.parse(localStorage.getItem("users")) || [];
+      const select = document.getElementById("username");
+      saved.forEach(name => {
+        const opt = document.createElement("option");
+        opt.value = name;
+        opt.textContent = name;
+        select.appendChild(opt);
+      });
     }
 
-    function promptRenameUser() {
-      const oldName = document.getElementById('username').value.trim();
-      if (!oldName || !storedUsers.includes(oldName)) return alert('กรุณาเลือกชื่อผู้ใช้ที่ต้องการเปลี่ยน');
-      const pass = prompt('กรอกรหัสเพื่อเปลี่ยนชื่อ (6 หลัก)');
-      if (pass !== '211421') return alert('รหัสไม่ถูกต้อง');
-      const newName = prompt('ระบุชื่อใหม่');
-      if (newName && newName.trim() && !storedUsers.includes(newName)) {
-        const index = storedUsers.indexOf(oldName);
-        storedUsers[index] = newName.trim();
-        localStorage.setItem('aeUserList', JSON.stringify(storedUsers));
-        alert('เปลี่ยนชื่อเรียบร้อย กรุณาเข้าสู่ระบบใหม่');
-        window.location.reload();
-      } else {
-        alert('ชื่อใหม่ไม่ถูกต้องหรือซ้ำ');
+    function onSelectUser() {
+      document.getElementById("editForm").style.display = "none";
+    }
+
+    function showEditName() {
+      if (document.getElementById("username").value !== "") {
+        document.getElementById("editForm").style.display = "block";
       }
     }
 
-    function promptDeleteUser() {
-      const user = document.getElementById('username').value.trim();
-      if (!user || !storedUsers.includes(user)) return alert('กรุณาเลือกชื่อผู้ใช้ที่ต้องการลบ');
-      const confirmPass = prompt('กรอกรหัสเพื่อลบผู้ใช้');
-      if (confirmPass !== '211421') return alert('รหัสไม่ถูกต้อง');
-      const index = storedUsers.indexOf(user);
-      storedUsers.splice(index, 1);
-      localStorage.setItem('aeUserList', JSON.stringify(storedUsers));
-      alert('ลบชื่อผู้ใช้งานแล้ว');
-      window.location.reload();
+    function saveNewName() {
+      const newName = document.getElementById("newUsername").value.trim();
+      const pass = document.getElementById("editPassword").value;
+      const current = document.getElementById("username").value;
+      if (pass !== passcode) return alert("รหัสไม่ถูกต้อง");
+      if (!newName) return alert("กรุณากรอกชื่อใหม่");
+
+      let users = JSON.parse(localStorage.getItem("users")) || [];
+      users = users.filter(u => u !== current);
+      users.push(newName);
+      localStorage.setItem("users", JSON.stringify(users));
+      localStorage.setItem("currentUser", newName);
+      alert("เปลี่ยนชื่อเรียบร้อยแล้ว");
+      location.reload();
     }
+
+    function deleteUser() {
+      const pass = document.getElementById("editPassword").value;
+      const current = document.getElementById("username").value;
+      if (pass !== passcode) return alert("รหัสไม่ถูกต้อง");
+      let users = JSON.parse(localStorage.getItem("users")) || [];
+      users = users.filter(u => u !== current);
+      localStorage.setItem("users", JSON.stringify(users));
+      localStorage.removeItem("currentUser");
+      alert("ลบบัญชีเรียบร้อย");
+      location.reload();
+    }
+
+    function login() {
+      const name = document.getElementById("username").value;
+      if (!name) return alert("กรุณาเลือกชื่อผู้ใช้งาน");
+      localStorage.setItem("currentUser", name);
+      if (!localStorage.getItem("users")) localStorage.setItem("users", JSON.stringify([name]));
+      else {
+        let users = JSON.parse(localStorage.getItem("users"));
+        if (!users.includes(name)) {
+          users.push(name);
+          localStorage.setItem("users", JSON.stringify(users));
+        }
+      }
+      location.href = "index.html";
+    }
+
+    loadUsernames();
   </script>
 </body>
 </html>
