@@ -3,35 +3,64 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>หน้ารายละเอียด</title>
+  <title>รายละเอียดแปลง</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>หน้ารายละเอียด</h1>
-  <div id="detailHeader"></div>
-  <div id="detailList"></div>
-  <button onclick="location.href='report.html'">🔙 กลับหน้ารายงาน</button>
+  <h2>รายละเอียดรายการในแปลง</h2>
+  <div id="info"></div>
+  <table>
+    <thead>
+      <tr>
+        <th>รายการ</th>
+        <th>ก่อนทำ</th>
+        <th>หลังทำ</th>
+        <th>สถานะ</th>
+        <th>หมายเหตุ</th>
+      </tr>
+    </thead>
+    <tbody id="detailTable"></tbody>
+  </table>
+
+  <div style="margin-top: 20px">
+    <label>ผู้ควบคุมงาน: <input type="text" id="inspector"></label>
+    <label>ผู้จัดการโครงการ: <input type="text" id="manager"></label>
+    <button onclick="printDetail()">พิมพ์รายงาน</button>
+  </div>
 
   <script>
-    const project = localStorage.getItem('aeSelectedProject');
-    const plot = localStorage.getItem('aeSelectedPlot');
-    const records = JSON.parse(localStorage.getItem('aeRecords') || '[]')
-      .filter(r => r.project === project && r.plot === plot);
+    const currentProject = localStorage.getItem('aeCurrentProject') || '-';
+    const currentPlot = localStorage.getItem('aeCurrentPlot') || '-';
+    const data = JSON.parse(localStorage.getItem('aeRecords') || '[]');
 
-    document.getElementById('detailHeader').innerHTML = `<h3>โครงการ: ${project} - แปลง: ${plot}</h3>`;
+    const filtered = data.filter(d => d.project === currentProject && d.plot === currentPlot);
+    document.getElementById('info').innerHTML = `
+      <p><strong>โครงการ:</strong> ${currentProject}</p>
+      <p><strong>เลขแปลง:</strong> ${currentPlot}</p>
+    `;
 
-    document.getElementById('detailList').innerHTML = records.map((r, i) => `
-      <div style="border:1px solid #ccc; margin:10px; padding:10px;">
-        <b>${i + 1}.</b> รายการ: ${r.description}<br>
-        วันที่: ${r.startDate} ถึง ${r.endDate || '-'}<br>
-        สถานะ: ${r.status}<br>
-        ผู้บันทึก: ${r.user}<br>
-        <div style="margin-top:5px;">
-          <img src="${r.beforeImage || ''}" alt="รูปก่อนทำ" width="100" onerror="this.style.display='none'">
-          <img src="${r.afterImage || ''}" alt="รูปหลังทำ" width="100" onerror="this.style.display='none'">
-        </div>
-      </div>
-    `).join('');
+    const table = document.getElementById('detailTable');
+    filtered.forEach((item, idx) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${item.description || '-'}</td>
+        <td>
+          ${item.before1 ? `<img src="${item.before1}" width="80">` : ''}
+          ${item.before2 ? `<img src="${item.before2}" width="80">` : ''}
+        </td>
+        <td>
+          ${item.after1 ? `<img src="${item.after1}" width="80">` : ''}
+          ${item.after2 ? `<img src="${item.after2}" width="80">` : ''}
+        </td>
+        <td>${item.status || '-'}</td>
+        <td>${item.note || ''}</td>
+      `;
+      table.appendChild(row);
+    });
+
+    function printDetail() {
+      window.print();
+    }
   </script>
 </body>
 </html>
