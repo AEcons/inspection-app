@@ -13,22 +13,29 @@
     <datalist id="userList"></datalist>
     <button type="submit">เข้าสู่ระบบ</button>
   </form>
+
   <button onclick="editUsername()">แก้ไขชื่อผู้ใช้งาน</button>
+  <button onclick="deleteUsername()">ลบบัญชีผู้ใช้งาน</button>
 
   <script>
     const USER_KEY = 'aeUserList';
     const CURRENT_USER = 'aeUser';
-    const PASSWORD = '211421'; // รหัสลับ (ไม่แสดงในหน้าเว็บ)
+    const PASSWORD = '211421'; // รหัสลับ
 
-    const userList = JSON.parse(localStorage.getItem(USER_KEY) || '[]');
+    let userList = JSON.parse(localStorage.getItem(USER_KEY) || '[]');
     const datalist = document.getElementById('userList');
 
-    // โหลดรายชื่อผู้ใช้งานเดิม
-    userList.forEach(name => {
-      const option = document.createElement('option');
-      option.value = name;
-      datalist.appendChild(option);
-    });
+    // แสดงชื่อใน datalist
+    function refreshDatalist() {
+      datalist.innerHTML = '';
+      userList.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        datalist.appendChild(opt);
+      });
+    }
+
+    refreshDatalist();
 
     function loginUser(e) {
       e.preventDefault();
@@ -45,25 +52,39 @@
     }
 
     function editUsername() {
-      const input = prompt("กรอกรหัสเพื่อแก้ไขชื่อผู้ใช้งาน:");
-      if (input !== PASSWORD) {
-        alert("รหัสไม่ถูกต้อง");
-        return;
-      }
+      const pass = prompt("กรอกรหัสเพื่อแก้ไขชื่อ:");
+      if (pass !== PASSWORD) return alert("รหัสไม่ถูกต้อง");
+
+      const oldName = document.getElementById('username').value.trim();
+      if (!userList.includes(oldName)) return alert("กรุณาเลือกชื่อที่ต้องการแก้ไข");
 
       const newName = prompt("กรอกชื่อใหม่:");
       if (!newName) return;
 
-      const oldName = document.getElementById('username').value.trim();
-      if (!oldName || !userList.includes(oldName)) {
-        alert("กรุณาเลือกชื่อเดิมที่ต้องการเปลี่ยนก่อน");
-        return;
-      }
-
-      const updatedList = userList.map(name => name === oldName ? newName : name);
-      localStorage.setItem(USER_KEY, JSON.stringify(updatedList));
+      userList = userList.map(n => n === oldName ? newName : n);
+      localStorage.setItem(USER_KEY, JSON.stringify(userList));
       localStorage.setItem(CURRENT_USER, newName);
-      location.reload();
+      refreshDatalist();
+      document.getElementById('username').value = newName;
+    }
+
+    function deleteUsername() {
+      const pass = prompt("กรอกรหัสเพื่อ *ลบ* ผู้ใช้งาน:");
+      if (pass !== PASSWORD) return alert("รหัสไม่ถูกต้อง");
+
+      const nameToDelete = document.getElementById('username').value.trim();
+      if (!userList.includes(nameToDelete)) return alert("ไม่พบชื่อในระบบ");
+
+      if (!confirm(`คุณต้องการลบ "${nameToDelete}" จริงหรือไม่?`)) return;
+
+      userList = userList.filter(n => n !== nameToDelete);
+      localStorage.setItem(USER_KEY, JSON.stringify(userList));
+      if (localStorage.getItem(CURRENT_USER) === nameToDelete) {
+        localStorage.removeItem(CURRENT_USER);
+      }
+      document.getElementById('username').value = '';
+      refreshDatalist();
+      alert(`ลบ "${nameToDelete}" แล้ว`);
     }
   </script>
 </body>
