@@ -2,67 +2,122 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>บันทึกข้อมูล - AE Inspector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>บันทึกการตรวจงาน</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h2>บันทึกข้อมูลโครงการ</h2>
+  <header>
+    <h1>บันทึกการตรวจงาน</h1>
+    <p>ผู้ใช้งาน: <span id="displayUser"></span></p>
+  </header>
 
-    <label>ชื่อโครงการ:</label>
-    <input type="text" id="project" placeholder="กรอกชื่อโครงการ" />
+  <main>
+    <section>
+      <label>ชื่อโครงการ
+        <select id="projectDropdown" onchange="onProjectChange()">
+          <option value="">-- เลือกโครงการ --</option>
+        </select>
+        <input type="text" id="project" placeholder="หรือกรอกใหม่" />
+      </label>
+      <label>เลขแปลง
+        <select id="plotDropdown">
+          <option value="">-- เลือกแปลง --</option>
+        </select>
+        <input type="text" id="plot" placeholder="หรือกรอกใหม่" />
+      </label>
+      <label>วันที่เริ่ม <input type="date" id="startDate" /></label>
+      <label>วันที่เสร็จ <input type="date" id="endDate" /></label>
+      <label>รายละเอียดรายการ <input type="text" id="item" /></label>
+      <label>สถานะ
+        <select id="status">
+          <option value="">-- เลือก --</option>
+          <option>อยู่ระหว่างแก้ไข</option>
+          <option>QC ผ่านแล้ว</option>
+          <option>ลูกบ้านรับมอบ</option>
+        </select>
+      </label>
+    </section>
 
-    <label>เลขแปลง:</label>
-    <input type="text" id="plot" placeholder="กรอกเลขแปลง" />
+    <section class="photos">
+      <div>
+        <label>รูปก่อนทำ 1
+          <input type="file" accept="image/*" capture="environment" onchange="previewImage(this, 'before1Preview')">
+          <img id="before1Preview" class="preview" src="" alt="ก่อนทำ 1">
+        </label>
+      </div>
+      <div>
+        <label>รูปก่อนทำ 2
+          <input type="file" accept="image/*" capture="environment" onchange="previewImage(this, 'before2Preview')">
+          <img id="before2Preview" class="preview" src="" alt="ก่อนทำ 2">
+        </label>
+      </div>
+      <div>
+        <label>รูปหลังทำ 1
+          <input type="file" accept="image/*" capture="environment" onchange="previewImage(this, 'after1Preview')">
+          <img id="after1Preview" class="preview" src="" alt="หลังทำ 1">
+        </label>
+      </div>
+      <div>
+        <label>รูปหลังทำ 2
+          <input type="file" accept="image/*" capture="environment" onchange="previewImage(this, 'after2Preview')">
+          <img id="after2Preview" class="preview" src="" alt="หลังทำ 2">
+        </label>
+      </div>
+    </section>
 
-    <label>วันที่เริ่ม:</label>
-    <input type="date" id="startDate" />
-
-    <label>วันที่เสร็จ:</label>
-    <input type="date" id="endDate" />
-
-    <label>รายการ:</label>
-    <input type="text" id="item" placeholder="รายละเอียดรายการ" />
-
-    <label>สถานะ:</label>
-    <select id="status">
-      <option value="">เลือกสถานะ</option>
-      <option>อยู่ระหว่างแก้ไข</option>
-      <option>QC ผ่านแล้ว</option>
-      <option>ลูกบ้านรับมอบ</option>
-    </select>
-
-    <hr>
-    <h3>รูปก่อนทำ</h3>
-    <input type="file" accept="image/*" onchange="previewImage(this, 'before1Preview')" />
-    <img id="before1Preview" class="preview" />
-    <input type="file" accept="image/*" onchange="previewImage(this, 'before2Preview')" />
-    <img id="before2Preview" class="preview" />
-
-    <h3>รูปหลังทำ</h3>
-    <input type="file" accept="image/*" onchange="previewImage(this, 'after1Preview')" />
-    <img id="after1Preview" class="preview" />
-    <input type="file" accept="image/*" onchange="previewImage(this, 'after2Preview')" />
-    <img id="after2Preview" class="preview" />
-
-    <hr />
-    <button onclick="saveRecord()">📥 บันทึกข้อมูล</button>
-    <button onclick="loadRecord()">📝 แก้ไขข้อมูล</button>
-    <button onclick="window.location.href='index.html'">🔙 กลับหน้าหลัก</button>
-  </div>
+    <section class="buttons">
+      <button onclick="saveRecord()">บันทึก</button>
+      <button onclick="loadRecord()">แก้ไขข้อมูล</button>
+      <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
+    </section>
+  </main>
 
   <script src="app.js"></script>
   <script>
+    document.getElementById("displayUser").textContent = getUser();
+
     function previewImage(input, imgId) {
       const file = input.files[0];
       if (!file) return;
       const reader = new FileReader();
-      reader.onload = function (e) {
-        document.getElementById(imgId).src = e.target.result;
-      };
+      reader.onload = e => document.getElementById(imgId).src = e.target.result;
       reader.readAsDataURL(file);
     }
+
+    function populateDropdowns() {
+      const records = JSON.parse(localStorage.getItem("records") || "[]");
+      const projects = [...new Set(records.map(r => r.project))];
+      const projectSelect = document.getElementById("projectDropdown");
+      projects.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        projectSelect.appendChild(opt);
+      });
+    }
+
+    function onProjectChange() {
+      const selectedProject = document.getElementById("projectDropdown").value;
+      document.getElementById("project").value = selectedProject;
+
+      const records = JSON.parse(localStorage.getItem("records") || "[]");
+      const plots = [...new Set(records.filter(r => r.project === selectedProject).map(r => r.plot))];
+      const plotSelect = document.getElementById("plotDropdown");
+      plotSelect.innerHTML = '<option value="">-- เลือกแปลง --</option>';
+      plots.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        plotSelect.appendChild(opt);
+      });
+    }
+
+    document.getElementById("plotDropdown").addEventListener("change", function () {
+      document.getElementById("plot").value = this.value;
+    });
+
+    window.onload = populateDropdowns;
   </script>
 </body>
 </html>
