@@ -2,88 +2,72 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>เข้าสู่ระบบ</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>เข้าสู่ระบบ</h2>
-  <form onsubmit="loginUser(event)">
-    <input id="username" placeholder="ชื่อผู้ใช้งาน" list="userList" required>
-    <datalist id="userList"></datalist>
-    <button type="submit">เข้าสู่ระบบ</button>
-  </form>
-
-  <button onclick="editUsername()">แก้ไขชื่อผู้ใช้งาน</button>
-  <button onclick="deleteUsername()">ลบบัญชีผู้ใช้งาน</button>
+  <div class="login-container">
+    <h2>เข้าสู่ระบบ</h2>
+    <form onsubmit="loginUser(event)">
+      <input id="username" placeholder="ชื่อผู้ใช้งาน" list="userList" required>
+      <datalist id="userList"></datalist>
+      <button type="submit">เข้าสู่ระบบ</button>
+    </form>
+    <div class="account-options">
+      <button onclick="promptRenameUser()">เปลี่ยนชื่อผู้ใช้งาน</button>
+      <button onclick="promptDeleteUser()">ลบบัญชีผู้ใช้งาน</button>
+    </div>
+  </div>
 
   <script>
-    const USER_KEY = 'aeUserList';
-    const CURRENT_USER = 'aeUser';
-    const PASSWORD = '211421'; // รหัสลับ
-
-    let userList = JSON.parse(localStorage.getItem(USER_KEY) || '[]');
+    const storedUsers = JSON.parse(localStorage.getItem('aeUserList') || '[]');
     const datalist = document.getElementById('userList');
-
-    function refreshDatalist() {
-      datalist.innerHTML = '';
-      userList.forEach(name => {
-        const opt = document.createElement('option');
-        opt.value = name;
-        datalist.appendChild(opt);
-      });
-    }
-
-    refreshDatalist();
+    storedUsers.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u;
+      datalist.appendChild(opt);
+    });
 
     function loginUser(e) {
       e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      if (!username) return alert("กรุณากรอกชื่อผู้ใช้งาน");
-
-      if (!userList.includes(username)) {
-        userList.push(username);
-        localStorage.setItem(USER_KEY, JSON.stringify(userList));
+      const user = document.getElementById('username').value.trim();
+      if (!user) return alert('กรุณากรอกชื่อผู้ใช้งาน');
+      localStorage.setItem('aeUser', user);
+      if (!storedUsers.includes(user)) {
+        storedUsers.push(user);
+        localStorage.setItem('aeUserList', JSON.stringify(storedUsers));
       }
-
-      localStorage.setItem(CURRENT_USER, username);
       window.location.href = 'index.html';
     }
 
-    function editUsername() {
-      const pass = prompt("กรอกรหัสเพื่อแก้ไขชื่อ:");
-      if (pass !== PASSWORD) return alert("รหัสไม่ถูกต้อง");
-
+    function promptRenameUser() {
       const oldName = document.getElementById('username').value.trim();
-      if (!userList.includes(oldName)) return alert("กรุณาเลือกชื่อที่ต้องการแก้ไข");
-
-      const newName = prompt("กรอกชื่อใหม่:");
-      if (!newName) return;
-
-      userList = userList.map(n => n === oldName ? newName : n);
-      localStorage.setItem(USER_KEY, JSON.stringify(userList));
-      localStorage.setItem(CURRENT_USER, newName);
-      refreshDatalist();
-      document.getElementById('username').value = newName;
+      if (!oldName || !storedUsers.includes(oldName)) return alert('กรุณาเลือกชื่อผู้ใช้ที่ต้องการเปลี่ยน');
+      const pass = prompt('กรอกรหัสเพื่อเปลี่ยนชื่อ (6 หลัก)');
+      if (pass !== '211421') return alert('รหัสไม่ถูกต้อง');
+      const newName = prompt('ระบุชื่อใหม่');
+      if (newName && newName.trim() && !storedUsers.includes(newName)) {
+        const index = storedUsers.indexOf(oldName);
+        storedUsers[index] = newName.trim();
+        localStorage.setItem('aeUserList', JSON.stringify(storedUsers));
+        alert('เปลี่ยนชื่อเรียบร้อย กรุณาเข้าสู่ระบบใหม่');
+        window.location.reload();
+      } else {
+        alert('ชื่อใหม่ไม่ถูกต้องหรือซ้ำ');
+      }
     }
 
-    function deleteUsername() {
-      const pass = prompt("กรอกรหัสเพื่อ *ลบ* ผู้ใช้งาน:");
-      if (pass !== PASSWORD) return alert("รหัสไม่ถูกต้อง");
-
-      const nameToDelete = document.getElementById('username').value.trim();
-      if (!userList.includes(nameToDelete)) return alert("ไม่พบชื่อในระบบ");
-
-      if (!confirm(`คุณต้องการลบ "${nameToDelete}" จริงหรือไม่?`)) return;
-
-      userList = userList.filter(n => n !== nameToDelete);
-      localStorage.setItem(USER_KEY, JSON.stringify(userList));
-      if (localStorage.getItem(CURRENT_USER) === nameToDelete) {
-        localStorage.removeItem(CURRENT_USER);
-      }
-      document.getElementById('username').value = '';
-      refreshDatalist();
-      alert(`ลบ "${nameToDelete}" แล้ว`);
+    function promptDeleteUser() {
+      const user = document.getElementById('username').value.trim();
+      if (!user || !storedUsers.includes(user)) return alert('กรุณาเลือกชื่อผู้ใช้ที่ต้องการลบ');
+      const confirmPass = prompt('กรอกรหัสเพื่อลบผู้ใช้');
+      if (confirmPass !== '211421') return alert('รหัสไม่ถูกต้อง');
+      const index = storedUsers.indexOf(user);
+      storedUsers.splice(index, 1);
+      localStorage.setItem('aeUserList', JSON.stringify(storedUsers));
+      alert('ลบชื่อผู้ใช้งานแล้ว');
+      window.location.reload();
     }
   </script>
 </body>
