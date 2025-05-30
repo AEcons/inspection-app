@@ -7,59 +7,26 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>รายละเอียดรายการในแปลง</h2>
-  <div id="info"></div>
-  <table>
-    <thead>
-      <tr>
-        <th>รายการ</th>
-        <th>ก่อนทำ</th>
-        <th>หลังทำ</th>
-        <th>สถานะ</th>
-        <th>หมายเหตุ</th>
-      </tr>
-    </thead>
-    <tbody id="detailTable"></tbody>
-  </table>
+  <div class="container">
+    <h1>รายละเอียดรายการตรวจ</h1>
+    <div id="plotInfo" class="info-box"></div>
+    <div id="itemsList"></div>
 
-  <div style="margin-top: 20px">
-    <label>ผู้ควบคุมงาน: <input type="text" id="inspector"></label>
-    <label>ผู้จัดการโครงการ: <input type="text" id="manager"></label>
-    <button onclick="printDetail()">พิมพ์รายงาน</button>
+    <div class="signature-box">
+      <h3>ลงชื่อผู้ควบคุมงาน</h3>
+      <input type="text" id="inspectorName" placeholder="ชื่อผู้ควบคุมงาน">
+      <h3>ลงชื่อผู้จัดการโครงการ</h3>
+      <input type="text" id="managerName" placeholder="ชื่อผู้จัดการโครงการ">
+    </div>
+
+    <button onclick="window.print()">พิมพ์รายงาน</button>
+    <button onclick="goBack()">กลับหน้ารายงาน</button>
   </div>
 
+  <script src="app.js"></script>
   <script>
-    const currentProject = localStorage.getItem('aeCurrentProject') || '-';
-    const currentPlot = localStorage.getItem('aeCurrentPlot') || '-';
-    const data = JSON.parse(localStorage.getItem('aeRecords') || '[]');
-
-    const filtered = data.filter(d => d.project === currentProject && d.plot === currentPlot);
-    document.getElementById('info').innerHTML = `
-      <p><strong>โครงการ:</strong> ${currentProject}</p>
-      <p><strong>เลขแปลง:</strong> ${currentPlot}</p>
-    `;
-
-    const table = document.getElementById('detailTable');
-    filtered.forEach((item, idx) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${item.description || '-'}</td>
-        <td>
-          ${item.before1 ? `<img src="${item.before1}" width="80">` : ''}
-          ${item.before2 ? `<img src="${item.before2}" width="80">` : ''}
-        </td>
-        <td>
-          ${item.after1 ? `<img src="${item.after1}" width="80">` : ''}
-          ${item.after2 ? `<img src="${item.after2}" width="80">` : ''}
-        </td>
-        <td>${item.status || '-'}</td>
-        <td>${item.note || ''}</td>
-      `;
-      table.appendChild(row);
-    });
-
-    function printDetail() {
-      window.print();
+    function goBack() {
+      window.location.href = 'report.html';
     }
   </script>
 </body>
