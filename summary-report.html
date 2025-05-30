@@ -3,49 +3,46 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>สรุปรายงาน</title>
+  <title>รายงานสรุป</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>สรุปรายงานการตรวจงาน</h1>
+    <h1>รายงานสรุปผลการตรวจงาน</h1>
   </header>
 
   <main>
-    <section>
-      <label>เลือกโครงการ:
-        <select id="projectSelect" onchange="loadSummaryReport()">
-          <option value="">-- แสดงทั้งหมด --</option>
-        </select>
-      </label>
+    <label for="projectSelect">เลือกโครงการ:</label>
+    <select id="projectSelect" onchange="loadSummaryReport()">
+      <option value="">-- ทั้งหมด --</option>
+    </select>
+
+    <section class="summary">
+      <p><strong>จำนวนรายการทั้งหมด:</strong> <span id="totalItems">0</span></p>
+      <p><strong>อยู่ระหว่างแก้ไข:</strong> <span id="inProgress">0</span></p>
+      <p><strong>QC ผ่านแล้ว:</strong> <span id="qcPass">0</span></p>
+      <p><strong>ลูกบ้านรับมอบ:</strong> <span id="handover">0</span></p>
+      <p><strong>ยังไม่ระบุสถานะ:</strong> <span id="pending">0</span></p>
     </section>
 
     <section>
-      <table>
-        <tr><th>จำนวนรายการทั้งหมด</th><td id="totalItems">0</td></tr>
-        <tr><th>อยู่ระหว่างแก้ไข</th><td id="inProgress">0</td></tr>
-        <tr><th>QC ผ่านแล้ว</th><td id="qcPass">0</td></tr>
-        <tr><th>ลูกบ้านรับมอบ</th><td id="handover">0</td></tr>
-        <tr><th>ยังไม่ระบุสถานะ</th><td id="pending">0</td></tr>
-      </table>
-    </section>
-
-    <section>
-      <h3>รายการยอดนิยม 3 อันดับ</h3>
-      <ol id="topItems"></ol>
+      <h3>รายการที่ตรวจบ่อยที่สุด 3 อันดับ</h3>
+      <ul id="topItems"></ul>
     </section>
 
     <section class="buttons">
+      <button onclick="window.print()">พิมพ์ PDF</button>
       <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
     </section>
   </main>
 
   <script src="app.js"></script>
   <script>
-    function populateProjects() {
-      const select = document.getElementById("projectSelect");
+    function loadProjectSelect() {
       const keys = Object.keys(localStorage);
       const projects = [...new Set(keys.map(k => k.split("_")[0]))];
+      const select = document.getElementById("projectSelect");
+
       projects.forEach(p => {
         const opt = document.createElement("option");
         opt.value = p;
@@ -55,10 +52,9 @@
     }
 
     window.onload = () => {
-      populateProjects();
+      loadProjectSelect();
       loadSummaryReport();
     };
   </script>
 </body>
 </html>
-
