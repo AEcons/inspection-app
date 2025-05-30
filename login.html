@@ -2,98 +2,79 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>เข้าสู่ระบบ - AE Inspector</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div class="container">
-    <h2>เข้าสู่ระบบ AE Inspector</h2>
+    <h2>เข้าสู่ระบบ</h2>
 
-    <label for="username">ชื่อผู้ใช้งาน</label>
-    <select id="username" onchange="onSelectUser()">
-      <option value="">-- เลือกชื่อผู้ใช้ --</option>
-    </select>
-
-    <button onclick="showEditName()">เปลี่ยนชื่อผู้ใช้</button>
-    <div id="editForm" style="display:none;">
-      <input type="text" id="newUsername" placeholder="ชื่อใหม่" />
-      <input type="password" id="editPassword" placeholder="รหัสผ่าน (211421)" />
-      <button onclick="saveNewName()">บันทึกชื่อใหม่</button>
-      <button onclick="deleteUser()">ลบบัญชีนี้</button>
-    </div>
-
+    <label for="username">ชื่อผู้ใช้งาน:</label>
+    <select id="userList"></select>
     <button onclick="login()">เข้าสู่ระบบ</button>
+
+    <hr>
+
+    <h3>เพิ่มชื่อผู้ใช้ใหม่</h3>
+    <input type="text" id="newUser" placeholder="กรอกชื่อใหม่" />
+    <button onclick="addUser()">เพิ่ม</button>
+
+    <h3>ลบบัญชีผู้ใช้</h3>
+    <button onclick="removeUser()">ลบบัญชีที่เลือก</button>
   </div>
 
   <script>
-    const passcode = "211421";
+    const PASSWORD = "211421";
 
-    function loadUsernames() {
-      const saved = JSON.parse(localStorage.getItem("users")) || [];
-      const select = document.getElementById("username");
-      saved.forEach(name => {
-        const opt = document.createElement("option");
-        opt.value = name;
-        opt.textContent = name;
-        select.appendChild(opt);
-      });
-    }
-
-    function onSelectUser() {
-      document.getElementById("editForm").style.display = "none";
-    }
-
-    function showEditName() {
-      if (document.getElementById("username").value !== "") {
-        document.getElementById("editForm").style.display = "block";
-      }
-    }
-
-    function saveNewName() {
-      const newName = document.getElementById("newUsername").value.trim();
-      const pass = document.getElementById("editPassword").value;
-      const current = document.getElementById("username").value;
-      if (pass !== passcode) return alert("รหัสไม่ถูกต้อง");
-      if (!newName) return alert("กรุณากรอกชื่อใหม่");
-
-      let users = JSON.parse(localStorage.getItem("users")) || [];
-      users = users.filter(u => u !== current);
-      users.push(newName);
-      localStorage.setItem("users", JSON.stringify(users));
-      localStorage.setItem("currentUser", newName);
-      alert("เปลี่ยนชื่อเรียบร้อยแล้ว");
-      location.reload();
-    }
-
-    function deleteUser() {
-      const pass = document.getElementById("editPassword").value;
-      const current = document.getElementById("username").value;
-      if (pass !== passcode) return alert("รหัสไม่ถูกต้อง");
-      let users = JSON.parse(localStorage.getItem("users")) || [];
-      users = users.filter(u => u !== current);
-      localStorage.setItem("users", JSON.stringify(users));
-      localStorage.removeItem("currentUser");
-      alert("ลบบัญชีเรียบร้อย");
-      location.reload();
+    function loadUsers() {
+      const users = JSON.parse(localStorage.getItem("userList") || "[]");
+      const select = document.getElementById("userList");
+      select.innerHTML = users.map(u => `<option value="${u}">${u}</option>`).join("");
     }
 
     function login() {
-      const name = document.getElementById("username").value;
-      if (!name) return alert("กรุณาเลือกชื่อผู้ใช้งาน");
-      localStorage.setItem("currentUser", name);
-      if (!localStorage.getItem("users")) localStorage.setItem("users", JSON.stringify([name]));
-      else {
-        let users = JSON.parse(localStorage.getItem("users"));
-        if (!users.includes(name)) {
-          users.push(name);
-          localStorage.setItem("users", JSON.stringify(users));
-        }
-      }
-      location.href = "index.html";
+      const name = document.getElementById("userList").value;
+      if (!name) return alert("กรุณาเลือกชื่อผู้ใช้");
+      localStorage.setItem("username", name);
+      window.location.href = "index.html";
     }
 
-    loadUsernames();
+    function addUser() {
+      const name = document.getElementById("newUser").value.trim();
+      if (!name) return alert("กรอกชื่อก่อน");
+      const pass = prompt("กรอกรหัสเพื่อเพิ่มชื่อ");
+      if (pass !== PASSWORD) return alert("รหัสไม่ถูกต้อง");
+
+      let users = JSON.parse(localStorage.getItem("userList") || "[]");
+      if (!users.includes(name)) {
+        users.push(name);
+        localStorage.setItem("userList", JSON.stringify(users));
+        localStorage.setItem("username", name);
+        loadUsers();
+        alert("เพิ่มชื่อเรียบร้อย");
+      } else {
+        alert("ชื่อซ้ำ");
+      }
+    }
+
+    function removeUser() {
+      const name = document.getElementById("userList").value;
+      if (!name) return alert("เลือกชื่อก่อนลบ");
+      const pass = prompt("กรอกรหัสเพื่อยืนยันการลบ");
+      if (pass !== PASSWORD) return alert("รหัสไม่ถูกต้อง");
+
+      let users = JSON.parse(localStorage.getItem("userList") || "[]");
+      users = users.filter(u => u !== name);
+      localStorage.setItem("userList", JSON.stringify(users));
+      if (localStorage.getItem("username") === name) {
+        localStorage.removeItem("username");
+      }
+      loadUsers();
+      alert("ลบชื่อเรียบร้อย");
+    }
+
+    loadUsers();
   </script>
 </body>
 </html>
