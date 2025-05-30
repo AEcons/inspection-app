@@ -89,16 +89,24 @@
       const records = JSON.parse(localStorage.getItem("records") || "[]");
       const projects = [...new Set(records.map(r => r.project))];
       const projectSelect = document.getElementById("projectDropdown");
+      projectSelect.innerHTML = '<option value="">-- เลือกโครงการ --</option>';
       projects.forEach(p => {
         const opt = document.createElement("option");
         opt.value = p;
         opt.textContent = p;
         projectSelect.appendChild(opt);
       });
+
+      const lastRecord = records[records.length - 1];
+      if (lastRecord) {
+        document.getElementById("project").value = lastRecord.project;
+        document.getElementById("plot").value = lastRecord.plot;
+        onProjectChange();
+      }
     }
 
     function onProjectChange() {
-      const selectedProject = document.getElementById("projectDropdown").value;
+      const selectedProject = document.getElementById("projectDropdown").value || document.getElementById("project").value;
       document.getElementById("project").value = selectedProject;
 
       const records = JSON.parse(localStorage.getItem("records") || "[]");
