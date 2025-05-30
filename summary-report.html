@@ -3,60 +3,35 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>รายงานสรุป</title>
+  <title>สรุปรายการ</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h2>สรุปสถานะของโครงการ</h2>
-  <label>เลือกโครงการ: 
-    <select id="projectSelect" onchange="loadSummary()"></select>
-  </label>
-  <div id="summary"></div>
+  <div class="container">
+    <h1>สรุปรายการโครงการ</h1>
 
+    <label for="projectSelect">เลือกโครงการ:</label>
+    <select id="projectSelect"></select>
+
+    <div id="summaryBox">
+      <p><strong>จำนวนรายการทั้งหมด:</strong> <span id="totalItems">0</span></p>
+      <p><strong>อยู่ระหว่างแก้ไข:</strong> <span id="inProgress">0</span></p>
+      <p><strong>QC ผ่านแล้ว:</strong> <span id="qcPass">0</span></p>
+      <p><strong>ลูกบ้านรับมอบ:</strong> <span id="handover">0</span></p>
+      <p><strong>รอดำเนินการ:</strong> <span id="pending">0</span></p>
+    </div>
+
+    <h3>รายการยอดนิยม 3 อันดับแรก</h3>
+    <ol id="topItems"></ol>
+
+    <button onclick="window.print()">พิมพ์สรุปรายงาน</button>
+    <button onclick="window.location.href='index.html'">กลับเมนูหลัก</button>
+  </div>
+
+  <script src="app.js"></script>
   <script>
-    const records = JSON.parse(localStorage.getItem('aeRecords') || '[]');
-    const projectSelect = document.getElementById('projectSelect');
-    const projects = [...new Set(records.map(r => r.project))];
-
-    projectSelect.innerHTML = '<option value="all">ทุกโครงการ</option>' +
-      projects.map(p => `<option value="${p}">${p}</option>`).join('');
-
-    function loadSummary() {
-      const selected = projectSelect.value;
-      const filtered = selected === 'all' ? records : records.filter(r => r.project === selected);
-      const total = filtered.length;
-
-      const statusCount = {
-        'ระหว่างแก้ไข': 0,
-        'QC Pass': 0,
-        'ลูกบ้านรับมอบ': 0
-      };
-
-      const itemCount = {};
-
-      filtered.forEach(r => {
-        if (r.status in statusCount) statusCount[r.status]++;
-        if (!itemCount[r.description]) itemCount[r.description] = 0;
-        itemCount[r.description]++;
-      });
-
-      const remain = total - Object.values(statusCount).reduce((a,b) => a + b, 0);
-      const top3 = Object.entries(itemCount).sort((a,b) => b[1] - a[1]).slice(0,3);
-
-      document.getElementById('summary').innerHTML = `
-        <p><strong>จำนวนรายการทั้งหมด:</strong> ${total}</p>
-        <p><strong>อยู่ระหว่างแก้ไข:</strong> ${statusCount['ระหว่างแก้ไข']}</p>
-        <p><strong>QC Pass:</strong> ${statusCount['QC Pass']}</p>
-        <p><strong>ลูกบ้านรับมอบ:</strong> ${statusCount['ลูกบ้านรับมอบ']}</p>
-        <p><strong>คงเหลือรอดำเนินการ:</strong> ${remain}</p>
-        <p><strong>รายการยอดนิยม 3 อันดับ:</strong></p>
-        <ol>
-          ${top3.map(([desc,count]) => `<li>${desc} (${count} รายการ)</li>`).join('')}
-        </ol>
-      `;
-    }
-
-    loadSummary();
+    // โหลดข้อมูล summary จาก localStorage หรือแหล่งอื่นใน app.js
+    loadSummaryReport();
   </script>
 </body>
 </html>
