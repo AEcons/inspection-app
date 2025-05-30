@@ -30,13 +30,15 @@ function saveRecord() {
   const after1 = document.getElementById("after1Preview").src;
   const after2 = document.getElementById("after2Preview").src;
 
-  const record = {
-    project, plot, startDate, endDate, item, status, before1, before2, after1, after2,
+  const newRecord = {
+    startDate, endDate, item, status, before1, before2, after1, after2,
     user: getUser(), timestamp: new Date().toISOString()
   };
 
   const key = `${project}_${plot}`;
-  localStorage.setItem(key, JSON.stringify(record));
+  let existing = JSON.parse(localStorage.getItem(key)) || [];
+  existing.push(newRecord);
+  localStorage.setItem(key, JSON.stringify(existing));
   alert("บันทึกข้อมูลสำเร็จ");
 }
 
@@ -44,9 +46,10 @@ function loadRecord() {
   const project = document.getElementById("project").value;
   const plot = document.getElementById("plot").value;
   const key = `${project}_${plot}`;
-  const data = localStorage.getItem(key);
-  if (data) {
-    const rec = JSON.parse(data);
+  const records = JSON.parse(localStorage.getItem(key)) || [];
+
+  if (records.length > 0) {
+    const rec = records[records.length - 1];
     document.getElementById("startDate").value = rec.startDate;
     document.getElementById("endDate").value = rec.endDate;
     document.getElementById("item").value = rec.item;
@@ -74,9 +77,11 @@ function loadReport(project) {
   table.innerHTML = "";
   const keys = Object.keys(localStorage).filter(k => k.startsWith(project));
   keys.forEach(k => {
-    const rec = JSON.parse(localStorage.getItem(k));
-    const row = `<tr><td>${rec.project}</td><td>${rec.plot}</td><td>${rec.status}</td><td>${rec.item}</td></tr>`;
-    table.innerHTML += row;
+    const records = JSON.parse(localStorage.getItem(k));
+    records.forEach(rec => {
+      const row = `<tr><td>${rec.project}</td><td>${k.split("_")[1]}</td><td>${rec.status}</td><td>${rec.item}</td></tr>`;
+      table.innerHTML += row;
+    });
   });
 }
 
@@ -85,20 +90,28 @@ function loadSummaryReport() {
   const select = document.getElementById("projectSelect");
   const value = select?.value || "";
   const keys = Object.keys(localStorage).filter(k => k.includes("_"));
-  const records = keys.map(k => JSON.parse(localStorage.getItem(k))).filter(r => value === "" || r.project === value);
+  let allRecords = [];
 
-  document.getElementById("totalItems").textContent = records.length;
-  document.getElementById("inProgress").textContent = records.filter(r => r.status === "อยู่ระหว่างแก้ไข").length;
-  document.getElementById("qcPass").textContent = records.filter(r => r.status === "QC ผ่านแล้ว").length;
-  document.getElementById("handover").textContent = records.filter(r => r.status === "ลูกบ้านรับมอบ").length;
-  document.getElementById("pending").textContent = records.filter(r => r.status === "").length;
+  keys.forEach(k => {
+    const data = JSON.parse(localStorage.getItem(k));
+    data.forEach(r => {
+      if (value === "" || r.project === value) {
+        allRecords.push(r);
+      }
+    });
+  });
+
+  document.getElementById("totalItems").textContent = allRecords.length;
+  document.getElementById("inProgress").textContent = allRecords.filter(r => r.status === "อยู่ระหว่างแก้ไข").length;
+  document.getElementById("qcPass").textContent = allRecords.filter(r => r.status === "QC ผ่านแล้ว").length;
+  document.getElementById("handover").textContent = allRecords.filter(r => r.status === "ลูกบ้านรับมอบ").length;
+  document.getElementById("pending").textContent = allRecords.filter(r => r.status === "").length;
 
   const freq = {};
-  records.forEach(r => {
+  allRecords.forEach(r => {
     freq[r.item] = (freq[r.item] || 0) + 1;
   });
 
   const topItems = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,3);
   document.getElementById("topItems").innerHTML = topItems.map(([item, count]) => `<li>${item} (${count})</li>`).join("");
 }
-
