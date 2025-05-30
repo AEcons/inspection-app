@@ -1,37 +1,64 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>สรุปรายการ</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>สรุปรายงาน</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>สรุปรายการโครงการ</h1>
+  <header>
+    <h1>สรุปรายงานการตรวจงาน</h1>
+  </header>
 
-    <label for="projectSelect">เลือกโครงการ:</label>
-    <select id="projectSelect"></select>
+  <main>
+    <section>
+      <label>เลือกโครงการ:
+        <select id="projectSelect" onchange="loadSummaryReport()">
+          <option value="">-- แสดงทั้งหมด --</option>
+        </select>
+      </label>
+    </section>
 
-    <div id="summaryBox">
-      <p><strong>จำนวนรายการทั้งหมด:</strong> <span id="totalItems">0</span></p>
-      <p><strong>อยู่ระหว่างแก้ไข:</strong> <span id="inProgress">0</span></p>
-      <p><strong>QC ผ่านแล้ว:</strong> <span id="qcPass">0</span></p>
-      <p><strong>ลูกบ้านรับมอบ:</strong> <span id="handover">0</span></p>
-      <p><strong>รอดำเนินการ:</strong> <span id="pending">0</span></p>
-    </div>
+    <section>
+      <table>
+        <tr><th>จำนวนรายการทั้งหมด</th><td id="totalItems">0</td></tr>
+        <tr><th>อยู่ระหว่างแก้ไข</th><td id="inProgress">0</td></tr>
+        <tr><th>QC ผ่านแล้ว</th><td id="qcPass">0</td></tr>
+        <tr><th>ลูกบ้านรับมอบ</th><td id="handover">0</td></tr>
+        <tr><th>ยังไม่ระบุสถานะ</th><td id="pending">0</td></tr>
+      </table>
+    </section>
 
-    <h3>รายการยอดนิยม 3 อันดับแรก</h3>
-    <ol id="topItems"></ol>
+    <section>
+      <h3>รายการยอดนิยม 3 อันดับ</h3>
+      <ol id="topItems"></ol>
+    </section>
 
-    <button onclick="window.print()">พิมพ์สรุปรายงาน</button>
-    <button onclick="window.location.href='index.html'">กลับเมนูหลัก</button>
-  </div>
+    <section class="buttons">
+      <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
+    </section>
+  </main>
 
   <script src="app.js"></script>
   <script>
-    // โหลดข้อมูล summary จาก localStorage หรือแหล่งอื่นใน app.js
-    loadSummaryReport();
+    function populateProjects() {
+      const select = document.getElementById("projectSelect");
+      const keys = Object.keys(localStorage);
+      const projects = [...new Set(keys.map(k => k.split("_")[0]))];
+      projects.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        select.appendChild(opt);
+      });
+    }
+
+    window.onload = () => {
+      populateProjects();
+      loadSummaryReport();
+    };
   </script>
 </body>
 </html>
+
