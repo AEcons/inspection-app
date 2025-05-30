@@ -2,129 +2,73 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>รายละเอียดงาน</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    .record-box {
-      border: 1px solid #ccc;
-      padding: 10px;
-      margin: 12px 0;
-    }
-    .signature-section {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 50px;
-    }
-    .signature-box {
-      width: 40%;
-      text-align: center;
-      border-top: 1px solid black;
-      padding-top: 5px;
-    }
-  </style>
 </head>
 <body>
-  <div class="container">
-    <h2>รายละเอียดงานโครงการ</h2>
-    <div id="projectInfo"></div>
-    <div id="recordsContainer"></div>
+  <header>
+    <h1>รายละเอียดงานตรวจ</h1>
+    <p>โครงการ: <span id="projectName"></span></p>
+    <p>เลขแปลง: <span id="plotNumber"></span></p>
+  </header>
 
-    <div class="signature-section">
-      <div class="signature-box">ผู้ควบคุมงาน</div>
-      <div class="signature-box">ผู้จัดการโครงการ</div>
-    </div>
+  <main id="detailContainer"></main>
 
-    <br />
-    <div class="center">
-      <button onclick="prevPage()">⬅ หน้าก่อนหน้า</button>
-      <button onclick="nextPage()">หน้าถัดไป ➡</button>
+  <section class="signature">
+    <div class="sign-left">
+      <p>ลงชื่อผู้ควบคุมงาน</p>
+      <br><br><br>
+      <p>(................................................)</p>
     </div>
-    <br />
-    <div class="center">
-      <button onclick="window.print()">🖨️ พิมพ์รายงาน</button>
-      <button onclick="window.location.href='index.html'">🔙 กลับหน้าหลัก</button>
+    <div class="sign-right">
+      <p>ลงชื่อผู้จัดการโครงการ</p>
+      <br><br><br>
+      <p>(................................................)</p>
     </div>
-  </div>
+  </section>
+
+  <section class="buttons">
+    <button onclick="window.print()">พิมพ์รายงาน</button>
+    <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
+  </section>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const project = urlParams.get("project");
-    const plot = urlParams.get("plot");
-    const key = `${project}_${plot}`;
-
-    let currentPage = 0;
-    const itemsPerPage = 5;
-    let recordPages = [];
-
     function loadDetail() {
-      const data = localStorage.getItem(key);
-      if (!data) {
-        document.getElementById("projectInfo").innerHTML = "<p>ไม่พบข้อมูล</p>";
+      const project = sessionStorage.getItem("selectedProject");
+      const plot = sessionStorage.getItem("selectedPlot");
+      document.getElementById("projectName").textContent = project;
+      document.getElementById("plotNumber").textContent = plot;
+
+      const key = `${project}_${plot}`;
+      const records = JSON.parse(localStorage.getItem(key)) || [];
+      const container = document.getElementById("detailContainer");
+      container.innerHTML = "";
+
+      if (records.length === 0) {
+        container.innerHTML = "<p>ไม่พบข้อมูล</p>";
         return;
       }
 
-      const rec = JSON.parse(data);
-      document.getElementById("projectInfo").innerHTML = `
-        <p><strong>โครงการ:</strong> ${rec.project}</p>
-        <p><strong>แปลง:</strong> ${rec.plot}</p>
-        <p><strong>วันที่เริ่ม:</strong> ${rec.startDate}</p>
-        <p><strong>วันที่เสร็จ:</strong> ${rec.endDate}</p>
-        <p><strong>สถานะ:</strong> ${rec.status}</p>
-      `;
-
-      const itemList = [
-        {
-          item: rec.item,
-          before1: rec.before1,
-          before2: rec.before2,
-          after1: rec.after1,
-          after2: rec.after2,
-        },
-      ];
-
-      // เตรียมแบ่งหน้า (รองรับกรณีในอนาคตมีหลายรายการต่อแปลง)
-      recordPages = [];
-      for (let i = 0; i < itemList.length; i += itemsPerPage) {
-        recordPages.push(itemList.slice(i, i + itemsPerPage));
-      }
-
-      renderPage();
-    }
-
-    function renderPage() {
-      const container = document.getElementById("recordsContainer");
-      container.innerHTML = "";
-      const pageData = recordPages[currentPage];
-
-      pageData.forEach((r, idx) => {
-        const box = document.createElement("div");
-        box.className = "record-box";
-        box.innerHTML = `
-          <p><strong>รายการ:</strong> ${r.item}</p>
-          <div style="display: flex; flex-wrap: wrap; gap: 10px;">
-            <div><p>ก่อนทำ 1:</p><img src="${r.before1}" width="100"/></div>
-            <div><p>ก่อนทำ 2:</p><img src="${r.before2}" width="100"/></div>
-            <div><p>หลังทำ 1:</p><img src="${r.after1}" width="100"/></div>
-            <div><p>หลังทำ 2:</p><img src="${r.after2}" width="100"/></div>
+      records.forEach((rec, i) => {
+        const section = document.createElement("section");
+        section.className = "record-detail";
+        section.innerHTML = `
+          <h3>รายการที่ ${i + 1}</h3>
+          <p><strong>วันที่เริ่ม:</strong> ${rec.startDate || "-"}</p>
+          <p><strong>วันที่เสร็จ:</strong> ${rec.endDate || "-"}</p>
+          <p><strong>รายละเอียด:</strong> ${rec.item}</p>
+          <p><strong>สถานะ:</strong> ${rec.status}</p>
+          <div class="image-grid">
+            <img src="${rec.before1}" alt="ก่อนทำ 1" />
+            <img src="${rec.before2}" alt="ก่อนทำ 2" />
+            <img src="${rec.after1}" alt="หลังทำ 1" />
+            <img src="${rec.after2}" alt="หลังทำ 2" />
           </div>
+          <hr/>
         `;
-        container.appendChild(box);
+        container.appendChild(section);
       });
-    }
-
-    function nextPage() {
-      if (currentPage < recordPages.length - 1) {
-        currentPage++;
-        renderPage();
-      }
-    }
-
-    function prevPage() {
-      if (currentPage > 0) {
-        currentPage--;
-        renderPage();
-      }
     }
 
     window.onload = loadDetail;
