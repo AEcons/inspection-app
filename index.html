@@ -3,24 +3,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เมนูหลัก</title>
+  <title>เมนูหลัก - AE Inspector</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>AE INSPECTOR - เมนูหลัก</h1>
-  <p id="welcomeUser"></p>
-  <nav>
-    <button onclick="location.href='record.html'">➕ หน้าบันทึก</button>
-    <button onclick="location.href='report.html'">📋 หน้ารายงาน</button>
-    <button onclick="location.href='summary-report.html'">📊 หน้ารายงานสรุป</button>
-  </nav>
+  <div class="main-menu">
+    <h1>AE Inspector</h1>
+    <h3 id="welcome"></h3>
+    <div class="menu-buttons">
+      <button onclick="goTo('record.html')">หน้าบันทึก</button>
+      <button onclick="goTo('report.html')">หน้ารายงาน</button>
+      <button onclick="goTo('summary-report.html')">หน้ารายงานสรุป</button>
+    </div>
+  </div>
+
   <script>
-    const user = localStorage.getItem('aeUser');
-    if (user) {
-      document.getElementById('welcomeUser').innerText = `ยินดีต้อนรับ: ${user}`;
-    } else {
-      location.href = 'login.html';
+    function goTo(page) {
+      window.location.href = page;
     }
+
+    const user = localStorage.getItem('aeUser') || 'ไม่ระบุ';
+    document.getElementById('welcome').innerText = `ผู้ใช้งาน: ${user}`;
   </script>
 </body>
 </html>
