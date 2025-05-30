@@ -1,148 +1,91 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>หน้าบันทึก</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>หน้าบันทึก - AE Inspector</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>บันทึกงาน</h1>
+  <h2>หน้าบันทึกข้อมูล</h2>
   <form id="recordForm">
-    <label>ชื่อโครงการ: <input id="project" required></label>
-    <label>เลขแปลง: <input id="plot" required></label>
-    <label>วันที่เริ่ม: <input type="date" id="startDate" required></label>
+    <label>ชื่อโครงการ: <input type="text" id="projectName" required></label>
+    <label>เลขแปลง: <input type="text" id="plotNumber" required></label>
+    <label>วันที่เริ่ม: <input type="date" id="startDate"></label>
     <label>วันที่เสร็จ: <input type="date" id="endDate"></label>
-    <label>รายการงาน: <textarea id="description" required></textarea></label>
-
-    <label>📷 รูปก่อนทำ 1:
-      <div style="display:flex; align-items:center; gap:10px;">
-        <input type="file" id="before1" accept="image/*" capture="environment" />
-        <img id="previewBefore1" src="" style="width:100px; border:1px solid #ccc;" />
-      </div>
-    </label>
-    <label>📷 รูปก่อนทำ 2:
-      <div style="display:flex; align-items:center; gap:10px;">
-        <input type="file" id="before2" accept="image/*" />
-        <img id="previewBefore2" src="" style="width:100px; border:1px solid #ccc;" />
-      </div>
-    </label>
-    <label>📷 รูปหลังทำ 1:
-      <div style="display:flex; align-items:center; gap:10px;">
-        <input type="file" id="after1" accept="image/*" capture="environment" />
-        <img id="previewAfter1" src="" style="width:100px; border:1px solid #ccc;" />
-      </div>
-    </label>
-    <label>📷 รูปหลังทำ 2:
-      <div style="display:flex; align-items:center; gap:10px;">
-        <input type="file" id="after2" accept="image/*" />
-        <img id="previewAfter2" src="" style="width:100px; border:1px solid #ccc;" />
-      </div>
-    </label>
+    
+    <div id="itemsContainer"></div>
+    <button type="button" onclick="addWorkItem()">เพิ่มรายการงาน</button>
+    <br><br>
 
     <label>สถานะ:
       <select id="status">
         <option value="อยู่ระหว่างแก้ไข">อยู่ระหว่างแก้ไข</option>
-        <option value="QC ผ่าน">QC ผ่าน</option>
+        <option value="QC Pass">QC Pass</option>
         <option value="ลูกบ้านรับมอบ">ลูกบ้านรับมอบ</option>
       </select>
     </label>
-    <button type="submit">บันทึก</button>
+
+    <br>
+    <button type="button" onclick="updateOldData()">แก้ไขข้อมูล</button>
+    <button type="button" onclick="saveRecord()">บันทึกข้อมูล</button>
+    <button type="button" onclick="goHome()">กลับเมนูหลัก</button>
   </form>
 
-  <button type="button" onclick="editPrevious()">✏️ แก้ไขข้อมูล</button>
-  <button type="button" onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
-
   <script>
-    const form = document.getElementById('recordForm');
-    const user = localStorage.getItem('aeUser') || '-';
-    let editingIndex = -1;
+    let currentUser = localStorage.getItem('aeUser') || '';
 
-    function previewFile(input, imgId) {
-      if (!input.files[0]) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        document.getElementById(imgId).src = reader.result;
-      };
-      reader.readAsDataURL(input.files[0]);
+    function addWorkItem(before = '', after = '', desc = '') {
+      const container = document.getElementById('itemsContainer');
+      const index = container.children.length + 1;
+      const div = document.createElement('div');
+      div.className = 'item';
+      div.innerHTML = `
+        <label>รายการ: <input type="text" class="desc" value="${desc}"></label><br>
+        <label>รูปก่อนทำ 1: <input type="file" class="before1" accept="image/*" capture></label>
+        <label>รูปก่อนทำ 2: <input type="file" class="before2" accept="image/*" capture></label><br>
+        <label>รูปหลังทำ 1: <input type="file" class="after1" accept="image/*" capture></label>
+        <label>รูปหลังทำ 2: <input type="file" class="after2" accept="image/*" capture></label><br><br>
+      `;
+      container.appendChild(div);
     }
 
-    ["before1", "before2", "after1", "after2"].forEach(id => {
-      form[id].addEventListener("change", e => previewFile(e.target, "preview" + id.charAt(0).toUpperCase() + id.slice(1)));
-    });
+    function saveRecord() {
+      const project = document.getElementById('projectName').value;
+      const plot = document.getElementById('plotNumber').value;
+      const status = document.getElementById('status').value;
+      const items = document.querySelectorAll('#itemsContainer .item');
+      const data = [];
 
-    async function toBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+      items.forEach(item => {
+        const desc = item.querySelector('.desc').value;
+        const before1 = item.querySelector('.before1').files[0];
+        const before2 = item.querySelector('.before2').files[0];
+        const after1 = item.querySelector('.after1').files[0];
+        const after2 = item.querySelector('.after2').files[0];
+
+        data.push({ desc, status, before1: before1?.name || '', before2: before2?.name || '', after1: after1?.name || '', after2: after2?.name || '' });
       });
+
+      const record = { project, plot, data, user: currentUser, date: new Date().toLocaleString(), status };
+      localStorage.setItem(`record-${project}-${plot}`, JSON.stringify(record));
+      alert('บันทึกสำเร็จ');
     }
 
-    form.onsubmit = async function(e) {
-      e.preventDefault();
-      const before1 = form.before1.files[0] ? await toBase64(form.before1.files[0]) : document.getElementById("previewBefore1").src;
-      const before2 = form.before2.files[0] ? await toBase64(form.before2.files[0]) : document.getElementById("previewBefore2").src;
-      const after1 = form.after1.files[0] ? await toBase64(form.after1.files[0]) : document.getElementById("previewAfter1").src;
-      const after2 = form.after2.files[0] ? await toBase64(form.after2.files[0]) : document.getElementById("previewAfter2").src;
+    function updateOldData() {
+      const project = document.getElementById('projectName').value;
+      const plot = document.getElementById('plotNumber').value;
+      const old = localStorage.getItem(`record-${project}-${plot}`);
+      if (!old) return alert('ไม่พบข้อมูลเดิม');
 
-      const record = {
-        project: form.project.value.trim(),
-        plot: form.plot.value.trim(),
-        startDate: form.startDate.value,
-        endDate: form.endDate.value,
-        description: form.description.value.trim(),
-        beforeImage: [before1, before2].filter(Boolean).join('|'),
-        afterImage: [after1, after2].filter(Boolean).join('|'),
-        status: form.status.value,
-        user,
-        timestamp: new Date().toISOString()
-      };
+      const { data, status } = JSON.parse(old);
+      document.getElementById('status').value = status;
+      document.getElementById('itemsContainer').innerHTML = '';
+      data.forEach(d => addWorkItem('', '', d.desc));
+    }
 
-      let records = JSON.parse(localStorage.getItem("aeRecords") || "[]");
-      if (editingIndex >= 0) {
-        records[editingIndex] = record;
-        alert("✅ ข้อมูลได้รับการอัปเดตเรียบร้อย");
-      } else {
-        records.push(record);
-        alert("✅ บันทึกข้อมูลเรียบร้อยแล้ว");
-      }
-      localStorage.setItem("aeRecords", JSON.stringify(records));
-      editingIndex = -1;
-      form.reset();
-      ["previewBefore1", "previewBefore2", "previewAfter1", "previewAfter2"].forEach(id => document.getElementById(id).src = "");
-    };
-
-    function editPrevious() {
-      const proj = form.project.value.trim();
-      const plot = form.plot.value.trim();
-      if (!proj || !plot) return alert("กรุณาระบุชื่อโครงการและเลขแปลง");
-
-      const records = JSON.parse(localStorage.getItem("aeRecords") || "[]");
-      const index = records.findIndex(r => r.project === proj && r.plot === plot);
-      if (index === -1) return alert("❌ ไม่พบข้อมูลเดิม");
-
-      const r = records[index];
-      form.project.value = r.project;
-      form.plot.value = r.plot;
-      form.startDate.value = r.startDate;
-      form.endDate.value = r.endDate;
-      form.description.value = r.description;
-      form.status.value = r.status;
-
-      const [b1, b2] = r.beforeImage.split('|');
-      const [a1, a2] = r.afterImage.split('|');
-      console.log("โหลดภาพจากข้อมูล:", r.beforeImage, r.afterImage);
-      const [b1, b2] = (r.beforeImage || '').split('|');
-      const [a1, a2] = (r.afterImage || '').split('|');
-      document.getElementById("previewBefore1").src = b1 ? b1 : '';
-      document.getElementById("previewBefore2").src = b2 ? b2 : '';
-      document.getElementById("previewAfter1").src = a1 ? a1 : '';
-      document.getElementById("previewAfter2").src = a2 ? a2 : '';
-      editingIndex = index;
-
-      alert("📂 โหลดข้อมูลเดิมเรียบร้อยแล้ว");
+    function goHome() {
+      window.location.href = 'index.html';
     }
   </script>
 </body>
