@@ -3,74 +3,76 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>หน้ารายงาน</title>
+  <title>รายงานโครงการ</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>หน้ารายงาน</h1>
+  <h2>รายงานโครงการ</h2>
   <label for="projectSelect">เลือกโครงการ:</label>
-  <select id="projectSelect" onchange="filterByProject()"></select>
-  <h3 id="selectedProjectTitle"></h3>
-  <div id="reportTable"></div>
-  <button onclick="location.href='index.html'">🔙 กลับเมนูหลัก</button>
+  <select id="projectSelect">
+    <option value="">-- เลือกโครงการ --</option>
+    <option value="all">ทุกโครงการ</option>
+  </select>
+
+  <table id="reportTable">
+    <thead>
+      <tr>
+        <th>โครงการ</th>
+        <th>เลขแปลง</th>
+        <th>สถานะ</th>
+        <th>จำนวนรายการ</th>
+        <th>รายละเอียด</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
   <script>
-    let allRecords = [];
+    const projectSelect = document.getElementById('projectSelect');
+    const tableBody = document.querySelector('#reportTable tbody');
 
-    async function loadData() {
-      const url = "https://script.google.com/macros/s/AKfycbz6TxFLY4L6kX15soOUBd-jRMY5cBB80jZtEDhJkkBq4TRLW6EhdmvxOPizJSo5w3jzHg/exec";
-      try {
-        const res = await fetch(url);
-        allRecords = await res.json();
-        const projects = [...new Set(allRecords.map(r => r.project))];
-        const select = document.getElementById('projectSelect');
-        select.innerHTML = '<option value="all">-- ดูทุกโครงการ --</option>' +
-          projects.map(p => `<option value="${p}">${p}</option>`).join('');
-        filterByProject();
-      } catch (err) {
-        alert("ไม่สามารถโหลดข้อมูลได้: " + err);
-      }
-    }
+    const data = JSON.parse(localStorage.getItem('aeRecords') || '[]');
+    const projects = [...new Set(data.map(d => d.project))];
+    projects.forEach(p => {
+      const opt = document.createElement('option');
+      opt.value = p;
+      opt.textContent = p;
+      projectSelect.appendChild(opt);
+    });
 
-    function filterByProject() {
-      const project = document.getElementById('projectSelect').value;
-      const table = document.getElementById('reportTable');
-      const header = document.getElementById('selectedProjectTitle');
-      const filtered = project === 'all' ? allRecords : allRecords.filter(r => r.project === project);
-
-      header.innerHTML = project === 'all'
-        ? "ข้อมูลรายแปลงของทุกโครงการ"
-        : `ข้อมูลรายแปลงของโครงการ: ${project}`;
-
-      if (filtered.length === 0) {
-        table.innerHTML = "<p>ไม่พบข้อมูล</p>";
-        return;
-      }
-
+    function renderReport(selectedProject) {
+      tableBody.innerHTML = '';
+      const filtered = selectedProject === 'all' ? data : data.filter(r => r.project === selectedProject);
       const grouped = {};
-      filtered.forEach(r => {
-        const key = `${r.project}||${r.plot}`;
-        if (!grouped[key]) grouped[key] = [];
-        grouped[key].push(r);
+
+      filtered.forEach(item => {
+        const key = `${item.project}|${item.plot}`;
+        if (!grouped[key]) {
+          grouped[key] = { project: item.project, plot: item.plot, count: 0, status: item.status };
+        }
+        grouped[key].count++;
       });
 
-      table.innerHTML = Object.entries(grouped).map(([key, items]) => {
-        const [proj, plot] = key.split('||');
-        const status = items[items.length - 1].status || "-";
-        return `<div>
-          🏠 <b>โครงการ: ${proj} - แปลง ${plot}</b> - สถานะ: ${status} - จำนวน ${items.length} รายการ
-          <button onclick="viewDetail('${proj}', '${plot}')">รายละเอียด</button>
-        </div>`;
-      }).join('');
+      Object.values(grouped).forEach(g => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${g.project}</td>
+          <td>${g.plot}</td>
+          <td>${g.status}</td>
+          <td>${g.count}</td>
+          <td><button onclick="viewDetail('${g.project}', '${g.plot}')">ดู</button></td>
+        `;
+        tableBody.appendChild(row);
+      });
     }
 
     function viewDetail(project, plot) {
-      localStorage.setItem('aeSelectedProject', project);
-      localStorage.setItem('aeSelectedPlot', plot);
+      localStorage.setItem('aeCurrentProject', project);
+      localStorage.setItem('aeCurrentPlot', plot);
       window.location.href = 'detail.html';
     }
 
-    window.onload = loadData;
+    projectSelect.addEventListener('change', () => renderReport(projectSelect.value));
   </script>
 </body>
 </html>
