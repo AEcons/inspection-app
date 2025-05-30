@@ -17,6 +17,14 @@ function requirePassword(callback) {
   else alert("รหัสไม่ถูกต้อง");
 }
 
+function deleteUser() {
+  requirePassword(() => {
+    localStorage.removeItem("username");
+    alert("ลบบัญชีแล้ว");
+    location.reload();
+  });
+}
+
 // ----- บันทึกข้อมูลจาก record.html -----
 function saveRecord() {
   const project = document.getElementById("project").value;
@@ -31,7 +39,7 @@ function saveRecord() {
   const after2 = document.getElementById("after2Preview").src;
 
   const newRecord = {
-    startDate, endDate, item, status, before1, before2, after1, after2,
+    project, plot, startDate, endDate, item, status, before1, before2, after1, after2,
     user: getUser(), timestamp: new Date().toISOString()
   };
 
