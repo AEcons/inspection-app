@@ -1,78 +1,91 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>รายงานโครงการ</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
-  <h2>รายงานโครงการ</h2>
-  <label for="projectSelect">เลือกโครงการ:</label>
-  <select id="projectSelect">
-    <option value="">-- เลือกโครงการ --</option>
-    <option value="all">ทุกโครงการ</option>
-  </select>
+  <header>
+    <h1>รายงานโครงการ</h1>
+    <p>ผู้ใช้งาน: <span id="displayUser"></span></p>
+  </header>
 
-  <table id="reportTable">
-    <thead>
-      <tr>
-        <th>โครงการ</th>
-        <th>เลขแปลง</th>
-        <th>สถานะ</th>
-        <th>จำนวนรายการ</th>
-        <th>รายละเอียด</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <main>
+    <section>
+      <label for="projectSelect">เลือกโครงการ:</label>
+      <select id="projectSelect" onchange="loadProjectReport()">
+        <option value="">-- เลือก --</option>
+      </select>
+    </section>
+
+    <table>
+      <thead>
+        <tr>
+          <th>โครงการ</th>
+          <th>เลขแปลง</th>
+          <th>สถานะ</th>
+          <th>รายละเอียด</th>
+          <th>ดูรายการ</th>
+        </tr>
+      </thead>
+      <tbody id="reportTable"></tbody>
+    </table>
+
+    <section class="buttons">
+      <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
+    </section>
+  </main>
 
   <script>
-    const projectSelect = document.getElementById('projectSelect');
-    const tableBody = document.querySelector('#reportTable tbody');
+    document.getElementById("displayUser").textContent = localStorage.getItem("username") || "";
 
-    const data = JSON.parse(localStorage.getItem('aeRecords') || '[]');
-    const projects = [...new Set(data.map(d => d.project))];
-    projects.forEach(p => {
-      const opt = document.createElement('option');
-      opt.value = p;
-      opt.textContent = p;
-      projectSelect.appendChild(opt);
-    });
+    function loadProjectReport() {
+      const selected = document.getElementById("projectSelect").value;
+      const table = document.getElementById("reportTable");
+      table.innerHTML = "";
+      const keys = Object.keys(localStorage).filter(k => k.includes("_"));
+      const used = new Set();
 
-    function renderReport(selectedProject) {
-      tableBody.innerHTML = '';
-      const filtered = selectedProject === 'all' ? data : data.filter(r => r.project === selectedProject);
-      const grouped = {};
+      keys.forEach(k => {
+        const records = JSON.parse(localStorage.getItem(k));
+        if (records.length > 0 && (selected === "" || records[0].project === selected)) {
+          const project = records[0].project;
+          const plot = records[0].plot;
+          if (used.has(`${project}_${plot}`)) return;
+          used.add(`${project}_${plot}`);
+          const status = records[records.length - 1].status || "";
+          const detail = records[records.length - 1].item || "";
 
-      filtered.forEach(item => {
-        const key = `${item.project}|${item.plot}`;
-        if (!grouped[key]) {
-          grouped[key] = { project: item.project, plot: item.plot, count: 0, status: item.status };
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${project}</td>
+            <td>${plot}</td>
+            <td>${status}</td>
+            <td>${detail}</td>
+            <td><button onclick="viewDetail('${project}','${plot}')">ดู</button></td>
+          `;
+          table.appendChild(tr);
         }
-        grouped[key].count++;
       });
+    }
 
-      Object.values(grouped).forEach(g => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${g.project}</td>
-          <td>${g.plot}</td>
-          <td>${g.status}</td>
-          <td>${g.count}</td>
-          <td><button onclick="viewDetail('${g.project}', '${g.plot}')">ดู</button></td>
-        `;
-        tableBody.appendChild(row);
-      });
+    function loadProjects() {
+      const keys = Object.keys(localStorage).filter(k => k.includes("_"));
+      const projects = [...new Set(keys.map(k => k.split("_")[0]))];
+      const select = document.getElementById("projectSelect");
+      select.innerHTML = `<option value="">-- เลือก --</option>` +
+        projects.map(p => `<option value="${p}">${p}</option>`).join("");
     }
 
     function viewDetail(project, plot) {
-      localStorage.setItem('aeCurrentProject', project);
-      localStorage.setItem('aeCurrentPlot', plot);
-      window.location.href = 'detail.html';
+      sessionStorage.setItem("selectedProject", project);
+      sessionStorage.setItem("selectedPlot", plot);
+      window.location.href = "detail.html";
     }
 
-    projectSelect.addEventListener('change', () => renderReport(projectSelect.value));
+    window.onload = loadProjects;
   </script>
 </body>
 </html>
