@@ -25,7 +25,6 @@
     let userList = JSON.parse(localStorage.getItem(USER_KEY) || '[]');
     const datalist = document.getElementById('userList');
 
-    // แสดงชื่อใน datalist
     function refreshDatalist() {
       datalist.innerHTML = '';
       userList.forEach(name => {
