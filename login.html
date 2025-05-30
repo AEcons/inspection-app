@@ -1,80 +1,94 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>เข้าสู่ระบบ - AE Inspector</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h2>เข้าสู่ระบบ</h2>
+  <main class="login-container">
+    <h1>เข้าสู่ระบบ</h1>
 
-    <label for="username">ชื่อผู้ใช้งาน:</label>
-    <select id="userList"></select>
+    <label>ชื่อผู้ใช้งานเดิม
+      <select id="usernameSelect">
+        <option value="">-- เลือกชื่อ --</option>
+      </select>
+    </label>
+
+    <label>หรือกรอกชื่อใหม่
+      <input type="text" id="newUsername" placeholder="ชื่อผู้ใช้งานใหม่">
+    </label>
+
     <button onclick="login()">เข้าสู่ระบบ</button>
-
-    <hr>
-
-    <h3>เพิ่มชื่อผู้ใช้ใหม่</h3>
-    <input type="text" id="newUser" placeholder="กรอกชื่อใหม่" />
-    <button onclick="addUser()">เพิ่ม</button>
-
-    <h3>ลบบัญชีผู้ใช้</h3>
-    <button onclick="removeUser()">ลบบัญชีที่เลือก</button>
-  </div>
+    <button onclick="changeUsername()">เปลี่ยนชื่อ</button>
+    <button onclick="deleteUser()">ลบบัญชี</button>
+  </main>
 
   <script>
-    const PASSWORD = "211421";
+    const USER_KEY = "username";
+    const USER_LIST_KEY = "userList";
 
-    function loadUsers() {
-      const users = JSON.parse(localStorage.getItem("userList") || "[]");
-      const select = document.getElementById("userList");
-      select.innerHTML = users.map(u => `<option value="${u}">${u}</option>`).join("");
+    function loadUserList() {
+      const users = JSON.parse(localStorage.getItem(USER_LIST_KEY)) || [];
+      const select = document.getElementById("usernameSelect");
+      select.innerHTML = '<option value="">-- เลือกชื่อ --</option>';
+      users.forEach(user => {
+        const opt = document.createElement("option");
+        opt.value = user;
+        opt.textContent = user;
+        select.appendChild(opt);
+      });
     }
 
     function login() {
-      const name = document.getElementById("userList").value;
-      if (!name) return alert("กรุณาเลือกชื่อผู้ใช้");
-      localStorage.setItem("username", name);
-      window.location.href = "index.html";
+      const selected = document.getElementById("usernameSelect").value;
+      const newName = document.getElementById("newUsername").value;
+      const name = selected || newName;
+      if (!name) return alert("กรุณาระบุชื่อ");
+
+      saveUser(name);
+      location.href = "index.html";
     }
 
-    function addUser() {
-      const name = document.getElementById("newUser").value.trim();
-      if (!name) return alert("กรอกชื่อก่อน");
-      const pass = prompt("กรอกรหัสเพื่อเพิ่มชื่อ");
-      if (pass !== PASSWORD) return alert("รหัสไม่ถูกต้อง");
+    function saveUser(name) {
+      localStorage.setItem(USER_KEY, name);
 
-      let users = JSON.parse(localStorage.getItem("userList") || "[]");
+      const users = JSON.parse(localStorage.getItem(USER_LIST_KEY)) || [];
       if (!users.includes(name)) {
         users.push(name);
-        localStorage.setItem("userList", JSON.stringify(users));
-        localStorage.setItem("username", name);
-        loadUsers();
-        alert("เพิ่มชื่อเรียบร้อย");
-      } else {
-        alert("ชื่อซ้ำ");
+        localStorage.setItem(USER_LIST_KEY, JSON.stringify(users));
       }
     }
 
-    function removeUser() {
-      const name = document.getElementById("userList").value;
-      if (!name) return alert("เลือกชื่อก่อนลบ");
-      const pass = prompt("กรอกรหัสเพื่อยืนยันการลบ");
-      if (pass !== PASSWORD) return alert("รหัสไม่ถูกต้อง");
+    function changeUsername() {
+      const newName = prompt("กรอกชื่อใหม่:");
+      if (!newName) return;
 
-      let users = JSON.parse(localStorage.getItem("userList") || "[]");
-      users = users.filter(u => u !== name);
-      localStorage.setItem("userList", JSON.stringify(users));
-      if (localStorage.getItem("username") === name) {
-        localStorage.removeItem("username");
-      }
-      loadUsers();
-      alert("ลบชื่อเรียบร้อย");
+      const pass = prompt("กรอกรหัสเพื่อเปลี่ยนชื่อ:");
+      if (pass !== "211421") return alert("รหัสไม่ถูกต้อง");
+
+      saveUser(newName);
+      alert("เปลี่ยนชื่อเรียบร้อย");
+      location.reload();
     }
 
-    loadUsers();
+    function deleteUser() {
+      const pass = prompt("กรอกรหัสเพื่อยืนยันการลบ:");
+      if (pass !== "211421") return alert("รหัสไม่ถูกต้อง");
+
+      const current = localStorage.getItem(USER_KEY);
+      localStorage.removeItem(USER_KEY);
+
+      let users = JSON.parse(localStorage.getItem(USER_LIST_KEY)) || [];
+      users = users.filter(u => u !== current);
+      localStorage.setItem(USER_LIST_KEY, JSON.stringify(users));
+      alert("ลบชื่อแล้ว");
+      location.reload();
+    }
+
+    window.onload = loadUserList;
   </script>
 </body>
 </html>
+
