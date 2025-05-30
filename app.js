@@ -1,65 +1,104 @@
 function saveUser(name) {
-  let users = JSON.parse(localStorage.getItem("users")) || [];
-  if (!users.includes(name)) {
-    users.push(name);
-    localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("username", name);
+}
+
+function getUser() {
+  return localStorage.getItem("username") || "";
+}
+
+function loadUsername() {
+  const usernameField = document.getElementById("username");
+  if (usernameField) usernameField.value = getUser();
+}
+
+function requirePassword(callback) {
+  const pass = prompt("กรอกรหัสผ่านเพื่อดำเนินการ");
+  if (pass === "211421") callback();
+  else alert("รหัสไม่ถูกต้อง");
+}
+
+// ----- บันทึกข้อมูลจาก record.html -----
+function saveRecord() {
+  const project = document.getElementById("project").value;
+  const plot = document.getElementById("plot").value;
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
+  const item = document.getElementById("item").value;
+  const status = document.getElementById("status").value;
+  const before1 = document.getElementById("before1Preview").src;
+  const before2 = document.getElementById("before2Preview").src;
+  const after1 = document.getElementById("after1Preview").src;
+  const after2 = document.getElementById("after2Preview").src;
+
+  const record = {
+    project, plot, startDate, endDate, item, status, before1, before2, after1, after2,
+    user: getUser(), timestamp: new Date().toISOString()
+  };
+
+  const key = `${project}_${plot}`;
+  localStorage.setItem(key, JSON.stringify(record));
+  alert("บันทึกข้อมูลสำเร็จ");
+}
+
+function loadRecord() {
+  const project = document.getElementById("project").value;
+  const plot = document.getElementById("plot").value;
+  const key = `${project}_${plot}`;
+  const data = localStorage.getItem(key);
+  if (data) {
+    const rec = JSON.parse(data);
+    document.getElementById("startDate").value = rec.startDate;
+    document.getElementById("endDate").value = rec.endDate;
+    document.getElementById("item").value = rec.item;
+    document.getElementById("status").value = rec.status;
+    document.getElementById("before1Preview").src = rec.before1;
+    document.getElementById("before2Preview").src = rec.before2;
+    document.getElementById("after1Preview").src = rec.after1;
+    document.getElementById("after2Preview").src = rec.after2;
+  } else {
+    alert("ไม่พบข้อมูลเดิม");
   }
-  localStorage.setItem("currentUser", name);
 }
 
-function getCurrentUser() {
-  return localStorage.getItem("currentUser") || "";
+// ----- รายงานทั้งหมด -----
+function loadProjectList(selectId) {
+  const select = document.getElementById(selectId);
+  const keys = Object.keys(localStorage);
+  const projects = [...new Set(keys.map(k => k.split("_")[0]))];
+  select.innerHTML = `<option value="">เลือกโครงการ</option>` +
+    projects.map(p => `<option value="${p}">${p}</option>`).join("");
 }
 
-function getProjects() {
-  const data = JSON.parse(localStorage.getItem("records")) || [];
-  const projects = [...new Set(data.map(item => item.project))];
-  return projects;
+function loadReport(project) {
+  const table = document.getElementById("reportTable");
+  table.innerHTML = "";
+  const keys = Object.keys(localStorage).filter(k => k.startsWith(project));
+  keys.forEach(k => {
+    const rec = JSON.parse(localStorage.getItem(k));
+    const row = `<tr><td>${rec.project}</td><td>${rec.plot}</td><td>${rec.status}</td><td>${rec.item}</td></tr>`;
+    table.innerHTML += row;
+  });
 }
 
+// ----- สรุปรายงาน -----
 function loadSummaryReport() {
-  const projectSelect = document.getElementById("projectSelect");
-  const data = JSON.parse(localStorage.getItem("records")) || [];
-  const projects = getProjects();
+  const select = document.getElementById("projectSelect");
+  const value = select?.value || "";
+  const keys = Object.keys(localStorage).filter(k => k.includes("_"));
+  const records = keys.map(k => JSON.parse(localStorage.getItem(k))).filter(r => value === "" || r.project === value);
 
-  projectSelect.innerHTML = '<option value="">-- เลือกโครงการ --</option>';
-  projects.forEach(proj => {
-    const opt = document.createElement("option");
-    opt.value = proj;
-    opt.textContent = proj;
-    projectSelect.appendChild(opt);
+  document.getElementById("totalItems").textContent = records.length;
+  document.getElementById("inProgress").textContent = records.filter(r => r.status === "อยู่ระหว่างแก้ไข").length;
+  document.getElementById("qcPass").textContent = records.filter(r => r.status === "QC ผ่านแล้ว").length;
+  document.getElementById("handover").textContent = records.filter(r => r.status === "ลูกบ้านรับมอบ").length;
+  document.getElementById("pending").textContent = records.filter(r => r.status === "").length;
+
+  const freq = {};
+  records.forEach(r => {
+    freq[r.item] = (freq[r.item] || 0) + 1;
   });
 
-  projectSelect.addEventListener("change", () => {
-    const selected = projectSelect.value;
-    const filtered = selected ? data.filter(i => i.project === selected) : data;
-
-    const total = filtered.length;
-    const inProgress = filtered.filter(i => i.status === "อยู่ระหว่างแก้ไข").length;
-    const qcPass = filtered.filter(i => i.status === "QC ผ่านแล้ว").length;
-    const handover = filtered.filter(i => i.status === "ลูกบ้านรับมอบ").length;
-    const pending = total - (inProgress + qcPass + handover);
-
-    document.getElementById("totalItems").textContent = total;
-    document.getElementById("inProgress").textContent = inProgress;
-    document.getElementById("qcPass").textContent = qcPass;
-    document.getElementById("handover").textContent = handover;
-    document.getElementById("pending").textContent = pending;
-
-    const counter = {};
-    filtered.forEach(item => {
-      counter[item.description] = (counter[item.description] || 0) + 1;
-    });
-
-    const sorted = Object.entries(counter).sort((a,b) => b[1] - a[1]).slice(0,3);
-    const topList = document.getElementById("topItems");
-    topList.innerHTML = "";
-    sorted.forEach(([desc, count]) => {
-      const li = document.createElement("li");
-      li.textContent = `${desc} (${count} รายการ)`;
-      topList.appendChild(li);
-    });
-  });
+  const topItems = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,3);
+  document.getElementById("topItems").innerHTML = topItems.map(([item, count]) => `<li>${item} (${count})</li>`).join("");
 }
 
-// ฟังก์ชันอื่น ๆ สำหรับ login, record, report, detail, ฯลฯ จะตามมา
