@@ -4,88 +4,62 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>รายงานโครงการ</title>
-  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>รายงานโครงการ</h1>
-    <p>ผู้ใช้งาน: <span id="displayUser"></span></p>
+    <h1>รายงานการตรวจงาน</h1>
   </header>
 
   <main>
     <section>
-      <label for="projectSelect">เลือกโครงการ:</label>
-      <select id="projectSelect" onchange="loadProjectReport()">
-        <option value="">-- เลือก --</option>
-      </select>
+      <label>เลือกโครงการ:
+        <select id="reportProjectSelect" onchange="loadReport(this.value)">
+          <option value="">-- เลือก --</option>
+        </select>
+      </label>
     </section>
 
-    <table>
-      <thead>
-        <tr>
-          <th>โครงการ</th>
-          <th>เลขแปลง</th>
-          <th>สถานะ</th>
-          <th>รายละเอียด</th>
-          <th>ดูรายการ</th>
-        </tr>
-      </thead>
-      <tbody id="reportTable"></tbody>
-    </table>
+    <section>
+      <table>
+        <thead>
+          <tr>
+            <th>โครงการ</th>
+            <th>แปลง</th>
+            <th>สถานะ</th>
+            <th>รายละเอียด</th>
+            <th>ดำเนินการ</th>
+          </tr>
+        </thead>
+        <tbody id="reportTable">
+          <!-- รายการจะโหลดตรงนี้ -->
+        </tbody>
+      </table>
+    </section>
 
     <section class="buttons">
       <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
     </section>
   </main>
 
+  <script src="app.js"></script>
   <script>
-    document.getElementById("displayUser").textContent = localStorage.getItem("username") || "";
-
-    function loadProjectReport() {
-      const selected = document.getElementById("projectSelect").value;
-      const table = document.getElementById("reportTable");
-      table.innerHTML = "";
-      const keys = Object.keys(localStorage).filter(k => k.includes("_"));
-      const used = new Set();
-
-      keys.forEach(k => {
-        const records = JSON.parse(localStorage.getItem(k));
-        if (records.length > 0 && (selected === "" || records[0].project === selected)) {
-          const project = records[0].project;
-          const plot = records[0].plot;
-          if (used.has(`${project}_${plot}`)) return;
-          used.add(`${project}_${plot}`);
-          const status = records[records.length - 1].status || "";
-          const detail = records[records.length - 1].item || "";
-
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${project}</td>
-            <td>${plot}</td>
-            <td>${status}</td>
-            <td>${detail}</td>
-            <td><button onclick="viewDetail('${project}','${plot}')">ดู</button></td>
-          `;
-          table.appendChild(tr);
-        }
+    function populateProjectSelect() {
+      const select = document.getElementById("reportProjectSelect");
+      const keys = Object.keys(localStorage);
+      const projects = [...new Set(keys.map(k => k.split("_")[0]))];
+      projects.forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        select.appendChild(opt);
       });
     }
 
-    function loadProjects() {
-      const keys = Object.keys(localStorage).filter(k => k.includes("_"));
-      const projects = [...new Set(keys.map(k => k.split("_")[0]))];
-      const select = document.getElementById("projectSelect");
-      select.innerHTML = `<option value="">-- เลือก --</option>` +
-        projects.map(p => `<option value="${p}">${p}</option>`).join("");
-    }
-
-    function viewDetail(project, plot) {
-      sessionStorage.setItem("selectedProject", project);
-      sessionStorage.setItem("selectedPlot", plot);
-      window.location.href = "detail.html";
-    }
-
-    window.onload = loadProjects;
+    window.onload = () => {
+      populateProjectSelect();
+    };
   </script>
 </body>
 </html>
+
