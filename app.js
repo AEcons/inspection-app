@@ -1,47 +1,65 @@
-function saveRecord(record) {
-  const records = JSON.parse(localStorage.getItem('aeRecords') || '[]');
-  const index = records.findIndex(r => r.project === record.project && r.plot === record.plot);
-  if (index >= 0) {
-    records[index] = record;
-  } else {
-    records.push(record);
+function saveUser(name) {
+  let users = JSON.parse(localStorage.getItem("users")) || [];
+  if (!users.includes(name)) {
+    users.push(name);
+    localStorage.setItem("users", JSON.stringify(users));
   }
-  localStorage.setItem('aeRecords', JSON.stringify(records));
+  localStorage.setItem("currentUser", name);
 }
 
-function loadRecord(project, plot) {
-  const records = JSON.parse(localStorage.getItem('aeRecords') || '[]');
-  return records.find(r => r.project === project && r.plot === plot);
+function getCurrentUser() {
+  return localStorage.getItem("currentUser") || "";
 }
 
-function getAllRecords() {
-  return JSON.parse(localStorage.getItem('aeRecords') || '[]');
+function getProjects() {
+  const data = JSON.parse(localStorage.getItem("records")) || [];
+  const projects = [...new Set(data.map(item => item.project))];
+  return projects;
 }
 
-function previewImage(input, imgId) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    document.getElementById(imgId).src = reader.result;
-    document.getElementById(imgId).style.display = 'block';
-  };
-  reader.readAsDataURL(file);
-}
+function loadSummaryReport() {
+  const projectSelect = document.getElementById("projectSelect");
+  const data = JSON.parse(localStorage.getItem("records")) || [];
+  const projects = getProjects();
 
-function convertImageToBase64(fileInput) {
-  return new Promise((resolve, reject) => {
-    const file = fileInput.files[0];
-    if (!file) return resolve(null);
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
+  projectSelect.innerHTML = '<option value="">-- เลือกโครงการ --</option>';
+  projects.forEach(proj => {
+    const opt = document.createElement("option");
+    opt.value = proj;
+    opt.textContent = proj;
+    projectSelect.appendChild(opt);
+  });
+
+  projectSelect.addEventListener("change", () => {
+    const selected = projectSelect.value;
+    const filtered = selected ? data.filter(i => i.project === selected) : data;
+
+    const total = filtered.length;
+    const inProgress = filtered.filter(i => i.status === "อยู่ระหว่างแก้ไข").length;
+    const qcPass = filtered.filter(i => i.status === "QC ผ่านแล้ว").length;
+    const handover = filtered.filter(i => i.status === "ลูกบ้านรับมอบ").length;
+    const pending = total - (inProgress + qcPass + handover);
+
+    document.getElementById("totalItems").textContent = total;
+    document.getElementById("inProgress").textContent = inProgress;
+    document.getElementById("qcPass").textContent = qcPass;
+    document.getElementById("handover").textContent = handover;
+    document.getElementById("pending").textContent = pending;
+
+    const counter = {};
+    filtered.forEach(item => {
+      counter[item.description] = (counter[item.description] || 0) + 1;
+    });
+
+    const sorted = Object.entries(counter).sort((a,b) => b[1] - a[1]).slice(0,3);
+    const topList = document.getElementById("topItems");
+    topList.innerHTML = "";
+    sorted.forEach(([desc, count]) => {
+      const li = document.createElement("li");
+      li.textContent = `${desc} (${count} รายการ)`;
+      topList.appendChild(li);
+    });
   });
 }
 
-function populateUserList(selectId) {
-  const users = JSON.parse(localStorage.getItem('aeUserList') || '[]');
-  const select = document.getElementById(selectId);
-  select.innerHTML = users.map(u => `<option value="${u}">${u}</option>`).join('');
-}
+// ฟังก์ชันอื่น ๆ สำหรับ login, record, report, detail, ฯลฯ จะตามมา
