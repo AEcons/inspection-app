@@ -101,3 +101,4 @@ function loadSummaryReport() {
   const topItems = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,3);
   document.getElementById("topItems").innerHTML = topItems.map(([item, count]) => `<li>${item} (${count})</li>`).join("");
 }
+
