@@ -1,25 +1,34 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AE Inspector - เมนูหลัก</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เมนูหลัก</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
-    <h1>เมนูหลัก</h1>
-    <button onclick="location.href='record.html'">หน้าบันทึก</button>
-    <button onclick="location.href='report.html'">หน้ารายงาน</button>
-    <button onclick="location.href='summary-report.html'">หน้ารายงานสรุป</button>
-    <button onclick="logout()">ออกจากระบบ</button>
-  </div>
+  <main class="menu">
+    <h1>AE Inspector</h1>
+    <p>ผู้ใช้งาน: <span id="displayUser"></span></p>
+
+    <div class="button-grid">
+      <button onclick="go('record.html')">บันทึกการตรวจงาน</button>
+      <button onclick="go('report.html')">รายงาน</button>
+      <button onclick="go('summary-report.html')">สรุปรายงาน</button>
+      <button onclick="go('login.html')">เปลี่ยนผู้ใช้งาน</button>
+    </div>
+  </main>
 
   <script>
-    function logout() {
-      localStorage.removeItem("aei_username");
-      window.location.href = "login.html";
+    function go(page) {
+      window.location.href = page;
     }
+
+    function getUser() {
+      return localStorage.getItem("username") || "ยังไม่ได้เข้าสู่ระบบ";
+    }
+
+    document.getElementById("displayUser").textContent = getUser();
   </script>
 </body>
 </html>
