@@ -1,92 +1,58 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>หน้าบันทึก - AE Inspector</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h2>หน้าบันทึกข้อมูล</h2>
-  <form id="recordForm">
-    <label>ชื่อโครงการ: <input type="text" id="projectName" required></label>
-    <label>เลขแปลง: <input type="text" id="plotNumber" required></label>
-    <label>วันที่เริ่ม: <input type="date" id="startDate"></label>
-    <label>วันที่เสร็จ: <input type="date" id="endDate"></label>
-    
-    <div id="itemsContainer"></div>
-    <button type="button" onclick="addWorkItem()">เพิ่มรายการงาน</button>
-    <br><br>
+  <div class="container">
+    <h1>หน้าบันทึก</h1>
 
-    <label>สถานะ:
-      <select id="status">
-        <option value="อยู่ระหว่างแก้ไข">อยู่ระหว่างแก้ไข</option>
-        <option value="QC Pass">QC Pass</option>
-        <option value="ลูกบ้านรับมอบ">ลูกบ้านรับมอบ</option>
-      </select>
-    </label>
+    <label>ชื่อโครงการ</label>
+    <input type="text" id="projectName" placeholder="เช่น บ้านตัวอย่าง A" />
 
-    <br>
-    <button type="button" onclick="updateOldData()">แก้ไขข้อมูล</button>
-    <button type="button" onclick="saveRecord()">บันทึกข้อมูล</button>
-    <button type="button" onclick="goHome()">กลับเมนูหลัก</button>
-  </form>
+    <label>เลขแปลง</label>
+    <input type="text" id="plotNumber" placeholder="เช่น A-101" />
 
-  <script>
-    let currentUser = localStorage.getItem('aeUser') || '';
+    <label>วันที่เริ่มตรวจ</label>
+    <input type="date" id="startDate" />
 
-    function addWorkItem(before = '', after = '', desc = '') {
-      const container = document.getElementById('itemsContainer');
-      const index = container.children.length + 1;
-      const div = document.createElement('div');
-      div.className = 'item';
-      div.innerHTML = `
-        <label>รายการ: <input type="text" class="desc" value="${desc}"></label><br>
-        <label>รูปก่อนทำ 1: <input type="file" class="before1" accept="image/*" capture></label>
-        <label>รูปก่อนทำ 2: <input type="file" class="before2" accept="image/*" capture></label><br>
-        <label>รูปหลังทำ 1: <input type="file" class="after1" accept="image/*" capture></label>
-        <label>รูปหลังทำ 2: <input type="file" class="after2" accept="image/*" capture></label><br><br>
-      `;
-      container.appendChild(div);
-    }
+    <label>วันที่เสร็จ</label>
+    <input type="date" id="endDate" />
 
-    function saveRecord() {
-      const project = document.getElementById('projectName').value;
-      const plot = document.getElementById('plotNumber').value;
-      const status = document.getElementById('status').value;
-      const items = document.querySelectorAll('#itemsContainer .item');
-      const data = [];
+    <label>รายละเอียดรายการ</label>
+    <textarea id="itemDescription" rows="3" placeholder="ระบุรายละเอียดการตรวจ"></textarea>
 
-      items.forEach(item => {
-        const desc = item.querySelector('.desc').value;
-        const before1 = item.querySelector('.before1').files[0];
-        const before2 = item.querySelector('.before2').files[0];
-        const after1 = item.querySelector('.after1').files[0];
-        const after2 = item.querySelector('.after2').files[0];
+    <label>รูปก่อนทำ (1)</label>
+    <input type="file" accept="image/*" capture="environment" id="beforePic1" />
+    <img class="preview" id="previewBefore1" />
 
-        data.push({ desc, status, before1: before1?.name || '', before2: before2?.name || '', after1: after1?.name || '', after2: after2?.name || '' });
-      });
+    <label>รูปก่อนทำ (2)</label>
+    <input type="file" accept="image/*" capture="environment" id="beforePic2" />
+    <img class="preview" id="previewBefore2" />
 
-      const record = { project, plot, data, user: currentUser, date: new Date().toLocaleString(), status };
-      localStorage.setItem(`record-${project}-${plot}`, JSON.stringify(record));
-      alert('บันทึกสำเร็จ');
-    }
+    <label>รูปหลังทำ (1)</label>
+    <input type="file" accept="image/*" capture="environment" id="afterPic1" />
+    <img class="preview" id="previewAfter1" />
 
-    function updateOldData() {
-      const project = document.getElementById('projectName').value;
-      const plot = document.getElementById('plotNumber').value;
-      const old = localStorage.getItem(`record-${project}-${plot}`);
-      if (!old) return alert('ไม่พบข้อมูลเดิม');
+    <label>รูปหลังทำ (2)</label>
+    <input type="file" accept="image/*" capture="environment" id="afterPic2" />
+    <img class="preview" id="previewAfter2" />
 
-      const { data, status } = JSON.parse(old);
-      document.getElementById('status').value = status;
-      document.getElementById('itemsContainer').innerHTML = '';
-      data.forEach(d => addWorkItem('', '', d.desc));
-    }
+    <label>สถานะ</label>
+    <select id="status">
+      <option value="อยู่ระหว่างแก้ไข">อยู่ระหว่างแก้ไข</option>
+      <option value="QC ผ่าน">QC ผ่าน</option>
+      <option value="ลูกบ้านรับมอบ">ลูกบ้านรับมอบ</option>
+    </select>
 
-    function goHome() {
-      window.location.href = 'index.html';
-    }
-  </script>
+    <button onclick="saveRecord()">บันทึกรายการ</button>
+    <button onclick="loadPrevious()">แก้ไขข้อมูล</button>
+    <button onclick="location.href='index.html'">กลับเมนูหลัก</button>
+  </div>
+
+  <script src="app.js"></script>
 </body>
 </html>
