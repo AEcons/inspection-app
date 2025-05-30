@@ -3,45 +3,52 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>รายละเอียดงาน</title>
+  <title>รายละเอียดแปลง</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>รายละเอียดงานตรวจ</h1>
-    <p>โครงการ: <span id="projectName"></span></p>
-    <p>เลขแปลง: <span id="plotNumber"></span></p>
+    <h1>รายละเอียดการตรวจงาน</h1>
+    <p>โครงการ: <span id="detailProject"></span> | แปลง: <span id="detailPlot"></span></p>
   </header>
 
-  <main id="detailContainer"></main>
-
-  <section class="signature">
-    <div class="sign-left">
-      <p>ลงชื่อผู้ควบคุมงาน</p>
-      <br><br><br>
-      <p>(................................................)</p>
+  <main>
+    <div id="detailContainer">
+      <!-- รายการตรวจงานทั้งหมดจะแสดงที่นี่ -->
     </div>
-    <div class="sign-right">
-      <p>ลงชื่อผู้จัดการโครงการ</p>
-      <br><br><br>
-      <p>(................................................)</p>
-    </div>
-  </section>
 
-  <section class="buttons">
-    <button onclick="window.print()">พิมพ์รายงาน</button>
-    <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
-  </section>
+    <section style="margin-top: 40px;">
+      <div style="display: flex; justify-content: space-between; margin-top: 50px;">
+        <div>
+          <p>ผู้ควบคุมงาน</p>
+          <div style="border-bottom: 1px solid black; width: 200px;"></div>
+        </div>
+        <div>
+          <p>ผู้จัดการโครงการ</p>
+          <div style="border-bottom: 1px solid black; width: 200px;"></div>
+        </div>
+      </div>
+    </section>
 
+    <section class="buttons">
+      <button onclick="window.print()">พิมพ์รายงาน</button>
+      <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
   <script>
-    function loadDetail() {
-      const project = sessionStorage.getItem("selectedProject");
-      const plot = sessionStorage.getItem("selectedPlot");
-      document.getElementById("projectName").textContent = project;
-      document.getElementById("plotNumber").textContent = plot;
+    function loadDetails() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const project = urlParams.get('project');
+      const plot = urlParams.get('plot');
+
+      document.getElementById("detailProject").textContent = project;
+      document.getElementById("detailPlot").textContent = plot;
 
       const key = `${project}_${plot}`;
       const records = JSON.parse(localStorage.getItem(key)) || [];
+
       const container = document.getElementById("detailContainer");
       container.innerHTML = "";
 
@@ -51,27 +58,28 @@
       }
 
       records.forEach((rec, i) => {
-        const section = document.createElement("section");
-        section.className = "record-detail";
-        section.innerHTML = `
+        const block = document.createElement("div");
+        block.classList.add("record-block");
+
+        block.innerHTML = `
           <h3>รายการที่ ${i + 1}</h3>
-          <p><strong>วันที่เริ่ม:</strong> ${rec.startDate || "-"}</p>
-          <p><strong>วันที่เสร็จ:</strong> ${rec.endDate || "-"}</p>
+          <p><strong>วันที่เริ่ม:</strong> ${rec.startDate} | <strong>วันที่เสร็จ:</strong> ${rec.endDate}</p>
           <p><strong>รายละเอียด:</strong> ${rec.item}</p>
           <p><strong>สถานะ:</strong> ${rec.status}</p>
-          <div class="image-grid">
-            <img src="${rec.before1}" alt="ก่อนทำ 1" />
-            <img src="${rec.before2}" alt="ก่อนทำ 2" />
-            <img src="${rec.after1}" alt="หลังทำ 1" />
-            <img src="${rec.after2}" alt="หลังทำ 2" />
+          <div class="image-row">
+            <div><img src="${rec.before1}" alt="before1"/><p>ก่อนทำ 1</p></div>
+            <div><img src="${rec.before2}" alt="before2"/><p>ก่อนทำ 2</p></div>
+            <div><img src="${rec.after1}" alt="after1"/><p>หลังทำ 1</p></div>
+            <div><img src="${rec.after2}" alt="after2"/><p>หลังทำ 2</p></div>
           </div>
-          <hr/>
         `;
-        container.appendChild(section);
+
+        container.appendChild(block);
       });
     }
 
-    window.onload = loadDetail;
+    window.onload = loadDetails;
   </script>
 </body>
 </html>
+
