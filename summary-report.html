@@ -5,56 +5,58 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>รายงานสรุป</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .summary-box { margin: 1rem 0; border: 1px solid #ccc; padding: 1rem; border-radius: 8px; }
+    .summary-box h2 { margin-bottom: 0.5rem; }
+    .summary-list li { margin-bottom: 0.25rem; }
+  </style>
 </head>
 <body>
   <header>
-    <h1>รายงานสรุปผลการตรวจงาน</h1>
+    <h1>รายงานสรุป</h1>
+    <p>ผู้ใช้งาน: <span id="displayUser"></span></p>
   </header>
 
   <main>
-    <label for="projectSelect">เลือกโครงการ:</label>
-    <select id="projectSelect" onchange="loadSummaryReport()">
-      <option value="">-- ทั้งหมด --</option>
-    </select>
+    <label for="projectSelect">เลือกโครงการ: 
+      <select id="projectSelect" onchange="loadSummaryReport()"></select>
+    </label>
 
-    <section class="summary">
-      <p><strong>จำนวนรายการทั้งหมด:</strong> <span id="totalItems">0</span></p>
-      <p><strong>อยู่ระหว่างแก้ไข:</strong> <span id="inProgress">0</span></p>
-      <p><strong>QC ผ่านแล้ว:</strong> <span id="qcPass">0</span></p>
-      <p><strong>ลูกบ้านรับมอบ:</strong> <span id="handover">0</span></p>
-      <p><strong>ยังไม่ระบุสถานะ:</strong> <span id="pending">0</span></p>
-    </section>
+    <div class="summary-box">
+      <h2>ยอดรวม</h2>
+      <ul class="summary-list">
+        <li>จำนวนรายการทั้งหมด: <span id="totalItems">-</span></li>
+        <li>อยู่ระหว่างแก้ไข: <span id="inProgress">-</span></li>
+        <li>QC ผ่านแล้ว: <span id="qcPass">-</span></li>
+        <li>ลูกบ้านรับมอบ: <span id="handover">-</span></li>
+        <li>ยังไม่ระบุสถานะ: <span id="pending">-</span></li>
+      </ul>
+    </div>
 
-    <section>
-      <h3>รายการที่ตรวจบ่อยที่สุด 3 อันดับ</h3>
-      <ul id="topItems"></ul>
-    </section>
+    <div class="summary-box">
+      <h2>รายการยอดนิยม</h2>
+      <ol id="topItems" class="summary-list"></ol>
+    </div>
 
-    <section class="buttons">
-      <button onclick="window.print()">พิมพ์ PDF</button>
-      <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
-    </section>
+    <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
   </main>
 
   <script src="app.js"></script>
   <script>
-    function loadProjectSelect() {
-      const keys = Object.keys(localStorage);
-      const projects = [...new Set(keys.map(k => k.split("_")[0]))];
-      const select = document.getElementById("projectSelect");
+    document.getElementById("displayUser").textContent = getUser();
 
-      projects.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p;
-        opt.textContent = p;
-        select.appendChild(opt);
-      });
+    function populateProjects() {
+      const keys = Object.keys(localStorage).filter(k => k.includes("_"));
+      const records = keys.flatMap(k => JSON.parse(localStorage.getItem(k) || "[]"));
+      const projects = [...new Set(records.map(r => r.project))];
+
+      const select = document.getElementById("projectSelect");
+      select.innerHTML = `<option value="">-- ทั้งหมด --</option>` +
+        projects.map(p => `<option value="${p}">${p}</option>`).join("");
     }
 
-    window.onload = () => {
-      loadProjectSelect();
-      loadSummaryReport();
-    };
+    populateProjects();
+    loadSummaryReport();
   </script>
 </body>
 </html>
