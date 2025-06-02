@@ -3,62 +3,78 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>รายงานโครงการ</title>
-  <link rel="stylesheet" href="style.css" />
+  <title>รายงาน</title>
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <header>
-    <h1>รายงานการตรวจงาน</h1>
+    <h1>รายงานโครงการ</h1>
+    <p>ผู้ใช้งาน: <span id="displayUser"></span></p>
   </header>
 
   <main>
-    <section>
-      <label>เลือกโครงการ:
-        <select id="reportProjectSelect" onchange="loadReport(this.value)">
-          <option value="">-- เลือก --</option>
-        </select>
-      </label>
-    </section>
+    <label>เลือกโครงการ
+      <select id="projectSelect" onchange="loadReport()"></select>
+    </label>
 
-    <section>
-      <table>
-        <thead>
-          <tr>
-            <th>โครงการ</th>
-            <th>แปลง</th>
-            <th>สถานะ</th>
-            <th>รายละเอียด</th>
-            <th>ดำเนินการ</th>
-          </tr>
-        </thead>
-        <tbody id="reportTable">
-          <!-- รายการจะโหลดตรงนี้ -->
-        </tbody>
-      </table>
-    </section>
+    <table>
+      <thead>
+        <tr>
+          <th>ชื่อโครงการ</th>
+          <th>เลขแปลง</th>
+          <th>สถานะ</th>
+          <th>จำนวนรายการ</th>
+          <th>ดูรายละเอียด</th>
+        </tr>
+      </thead>
+      <tbody id="reportTable"></tbody>
+    </table>
 
-    <section class="buttons">
-      <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
-    </section>
+    <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
   </main>
 
   <script src="app.js"></script>
   <script>
-    function populateProjectSelect() {
-      const select = document.getElementById("reportProjectSelect");
-      const keys = Object.keys(localStorage);
+    document.getElementById("displayUser").textContent = getUser();
+
+    function loadProjectList() {
+      const select = document.getElementById("projectSelect");
+      const keys = Object.keys(localStorage).filter(k => k.includes("_"));
       const projects = [...new Set(keys.map(k => k.split("_")[0]))];
-      projects.forEach(p => {
-        const opt = document.createElement("option");
-        opt.value = p;
-        opt.textContent = p;
-        select.appendChild(opt);
+
+      select.innerHTML = '<option value="">-- เลือกโครงการ --</option>' +
+        projects.map(p => `<option value="${p}">${p}</option>`).join("");
+    }
+
+    function loadReport() {
+      const project = document.getElementById("projectSelect").value;
+      const table = document.getElementById("reportTable");
+      table.innerHTML = "";
+
+      const keys = Object.keys(localStorage).filter(k => k.startsWith(project + "_"));
+      keys.forEach(k => {
+        const plot = k.split("_")[1];
+        const records = JSON.parse(localStorage.getItem(k) || "[]");
+        const status = records.length ? records[records.length - 1].status : "-";
+        const row = `
+          <tr>
+            <td>${project}</td>
+            <td>${plot}</td>
+            <td>${status}</td>
+            <td>${records.length}</td>
+            <td><button onclick="goDetail('${project}','${plot}')">ดูรายละเอียด</button></td>
+          </tr>`;
+        table.innerHTML += row;
       });
     }
 
-    window.onload = () => {
-      populateProjectSelect();
-    };
+    function goDetail(project, plot) {
+      localStorage.setItem("selected_project", project);
+      localStorage.setItem("selected_plot", plot);
+      window.location.href = "detail.html";
+    }
+
+    window.onload = loadProjectList;
   </script>
 </body>
 </html>
