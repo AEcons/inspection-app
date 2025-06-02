@@ -26,9 +26,9 @@ function deleteUser() {
 }
 
 // ----- บันทึกข้อมูลจาก record.html -----
-function saveRecord() {
-  const project = document.getElementById("project").value;
-  const plot = document.getElementById("plot").value;
+async function saveRecord() {
+  const project = document.getElementById("project").value.trim();
+  const plot = document.getElementById("plot").value.trim();
   const startDate = document.getElementById("startDate").value;
   const endDate = document.getElementById("endDate").value;
   const item = document.getElementById("item").value;
@@ -38,38 +38,48 @@ function saveRecord() {
   const after1 = document.getElementById("after1Preview").src;
   const after2 = document.getElementById("after2Preview").src;
 
-  const newRecord = {
-    project, plot, startDate, endDate, item, status, before1, before2, after1, after2,
-    user: getUser(), timestamp: new Date().toISOString()
+  const data = {
+    project, plot, startDate, endDate, item, status,
+    before1, before2, after1, after2,
+    user: getUser(),
+    timestamp: new Date().toISOString()
   };
 
-  const key = `${project}_${plot}`;
-  let existing = JSON.parse(localStorage.getItem(key)) || [];
-  existing.push(newRecord);
-  localStorage.setItem(key, JSON.stringify(existing));
-  alert("บันทึกข้อมูลสำเร็จ");
-}
-
-function loadRecord() {
-  const project = document.getElementById("project").value;
-  const plot = document.getElementById("plot").value;
-  const key = `${project}_${plot}`;
-  const records = JSON.parse(localStorage.getItem(key)) || [];
-
-  if (records.length > 0) {
-    const rec = records[records.length - 1];
-    document.getElementById("startDate").value = rec.startDate;
-    document.getElementById("endDate").value = rec.endDate;
-    document.getElementById("item").value = rec.item;
-    document.getElementById("status").value = rec.status;
-    document.getElementById("before1Preview").src = rec.before1;
-    document.getElementById("before2Preview").src = rec.before2;
-    document.getElementById("after1Preview").src = rec.after1;
-    document.getElementById("after2Preview").src = rec.after2;
-  } else {
-    alert("ไม่พบข้อมูลเดิม");
+  try {
+    const folderId = await createFolderIfNotExists(project);
+    const fileName = `${plot}.json`;
+    await uploadJson(folderId, fileName, data);
+    alert("✅ บันทึกข้อมูลลง Google Drive สำเร็จ");
+  } catch (err) {
+    console.error(err);
+    alert("❌ เกิดข้อผิดพลาดในการบันทึกข้อมูล");
   }
 }
+
+async function loadRecord() {
+  const project = document.getElementById("project").value.trim();
+  const plot = document.getElementById("plot").value.trim();
+  try {
+    const folderId = await createFolderIfNotExists(project);
+    const record = await readJson(folderId, `${plot}.json`);
+    if (!record) return alert("❌ ไม่พบข้อมูล");
+
+    document.getElementById("startDate").value = record.startDate;
+    document.getElementById("endDate").value = record.endDate;
+    document.getElementById("item").value = record.item;
+    document.getElementById("status").value = record.status;
+    document.getElementById("before1Preview").src = record.before1;
+    document.getElementById("before2Preview").src = record.before2;
+    document.getElementById("after1Preview").src = record.after1;
+    document.getElementById("after2Preview").src = record.after2;
+
+    alert("✅ โหลดข้อมูลสำเร็จ");
+  } catch (err) {
+    console.error(err);
+    alert("❌ โหลดข้อมูลไม่สำเร็จ");
+  }
+}
+
 
 // ----- รายงานทั้งหมด -----
 function loadProjectList(selectId) {
