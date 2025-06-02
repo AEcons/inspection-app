@@ -2,14 +2,9 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>รายงานสรุป</title>
   <link rel="stylesheet" href="style.css" />
-  <style>
-    .summary-box { margin: 1rem 0; border: 1px solid #ccc; padding: 1rem; border-radius: 8px; }
-    .summary-box h2 { margin-bottom: 0.5rem; }
-    .summary-list li { margin-bottom: 0.25rem; }
-  </style>
 </head>
 <body>
   <header>
@@ -18,45 +13,44 @@
   </header>
 
   <main>
-    <label for="projectSelect">เลือกโครงการ: 
-      <select id="projectSelect" onchange="loadSummaryReport()"></select>
-    </label>
+    <section>
+      <label>เลือกโครงการ:
+        <select id="projectSelect" onchange="loadSummaryReport()"></select>
+      </label>
+    </section>
 
-    <div class="summary-box">
-      <h2>ยอดรวม</h2>
-      <ul class="summary-list">
-        <li>จำนวนรายการทั้งหมด: <span id="totalItems">-</span></li>
-        <li>อยู่ระหว่างแก้ไข: <span id="inProgress">-</span></li>
-        <li>QC ผ่านแล้ว: <span id="qcPass">-</span></li>
-        <li>ลูกบ้านรับมอบ: <span id="handover">-</span></li>
-        <li>ยังไม่ระบุสถานะ: <span id="pending">-</span></li>
-      </ul>
+    <section class="summary">
+      <p>จำนวนรายการทั้งหมด: <strong id="totalItems">0</strong></p>
+      <p>อยู่ระหว่างแก้ไข: <strong id="inProgress">0</strong></p>
+      <p>QC ผ่านแล้ว: <strong id="qcPass">0</strong></p>
+      <p>ลูกบ้านรับมอบ: <strong id="handover">0</strong></p>
+      <p>ยังไม่ระบุสถานะ: <strong id="pending">0</strong></p>
+    </section>
+
+    <section>
+      <h3>รายการยอดนิยม</h3>
+      <ol id="topItems"></ol>
+    </section>
+
+    <div class="buttons">
+      <button onclick="window.print()">พิมพ์รายงาน</button>
+      <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
     </div>
-
-    <div class="summary-box">
-      <h2>รายการยอดนิยม</h2>
-      <ol id="topItems" class="summary-list"></ol>
-    </div>
-
-    <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
   </main>
 
   <script src="app.js"></script>
   <script>
     document.getElementById("displayUser").textContent = getUser();
 
-    function populateProjects() {
-      const keys = Object.keys(localStorage).filter(k => k.includes("_"));
-      const records = keys.flatMap(k => JSON.parse(localStorage.getItem(k) || "[]"));
-      const projects = [...new Set(records.map(r => r.project))];
+    const projectSelect = document.getElementById("projectSelect");
+    const keys = Object.keys(localStorage).filter(k => k.includes("_"));
+    const projects = [...new Set(keys.map(k => k.split("_")[0]))];
 
-      const select = document.getElementById("projectSelect");
-      select.innerHTML = `<option value="">-- ทั้งหมด --</option>` +
-        projects.map(p => `<option value="${p}">${p}</option>`).join("");
-    }
+    projectSelect.innerHTML = `<option value="">ทั้งหมด</option>` +
+      projects.map(p => `<option value="${p}">${p}</option>`).join("");
 
-    populateProjects();
     loadSummaryReport();
   </script>
 </body>
 </html>
+
