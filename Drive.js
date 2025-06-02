@@ -95,6 +95,8 @@ async function uploadJson(folderId, fileName, jsonData) {
     headers: {
       'Content-Type': `multipart/related; boundary="${boundary}"`
     },
+    <script src="drive.js"></script>
+
     body: multipartRequestBody
   });
 
