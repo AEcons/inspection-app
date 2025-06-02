@@ -2,29 +2,25 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>รายงานสรุป</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>สรุปรายงาน</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1>รายงานสรุป</h1>
-    <p>ผู้ใช้งาน: <span id="displayUser"></span></p>
-  </header>
+  <main class="summary-page">
+    <h1>รายงานสรุปโครงการ</h1>
 
-  <main>
-    <section>
-      <label>เลือกโครงการ:
-        <select id="projectSelect" onchange="loadSummaryReport()"></select>
-      </label>
-    </section>
+    <label for="projectSelect">เลือกโครงการ:</label>
+    <select id="projectSelect" onchange="loadSummaryReport()">
+      <option value="">-- ทั้งหมด --</option>
+    </select>
 
-    <section class="summary">
-      <p>จำนวนรายการทั้งหมด: <strong id="totalItems">0</strong></p>
-      <p>อยู่ระหว่างแก้ไข: <strong id="inProgress">0</strong></p>
-      <p>QC ผ่านแล้ว: <strong id="qcPass">0</strong></p>
-      <p>ลูกบ้านรับมอบ: <strong id="handover">0</strong></p>
-      <p>ยังไม่ระบุสถานะ: <strong id="pending">0</strong></p>
+    <section class="summary-stats">
+      <p><strong>จำนวนรายการทั้งหมด:</strong> <span id="totalItems">0</span></p>
+      <p><strong>อยู่ระหว่างแก้ไข:</strong> <span id="inProgress">0</span></p>
+      <p><strong>QC ผ่านแล้ว:</strong> <span id="qcPass">0</span></p>
+      <p><strong>ลูกบ้านรับมอบ:</strong> <span id="handover">0</span></p>
+      <p><strong>ยังไม่กำหนดสถานะ:</strong> <span id="pending">0</span></p>
     </section>
 
     <section>
@@ -33,24 +29,53 @@
     </section>
 
     <div class="buttons">
-      <button onclick="window.print()">พิมพ์รายงาน</button>
       <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
     </div>
   </main>
 
-  <script src="app.js"></script>
   <script>
-    document.getElementById("displayUser").textContent = getUser();
+    function loadSummaryReport() {
+      const select = document.getElementById("projectSelect");
+      const value = select?.value || "";
+      const keys = Object.keys(localStorage).filter(k => k.includes("_"));
+      let allRecords = [];
 
-    const projectSelect = document.getElementById("projectSelect");
-    const keys = Object.keys(localStorage).filter(k => k.includes("_"));
-    const projects = [...new Set(keys.map(k => k.split("_")[0]))];
+      keys.forEach(k => {
+        const data = JSON.parse(localStorage.getItem(k));
+        data.forEach(r => {
+          if (value === "" || r.project === value) {
+            allRecords.push(r);
+          }
+        });
+      });
 
-    projectSelect.innerHTML = `<option value="">ทั้งหมด</option>` +
-      projects.map(p => `<option value="${p}">${p}</option>`).join("");
+      document.getElementById("totalItems").textContent = allRecords.length;
+      document.getElementById("inProgress").textContent = allRecords.filter(r => r.status === "อยู่ระหว่างแก้ไข").length;
+      document.getElementById("qcPass").textContent = allRecords.filter(r => r.status === "QC ผ่านแล้ว").length;
+      document.getElementById("handover").textContent = allRecords.filter(r => r.status === "ลูกบ้านรับมอบ").length;
+      document.getElementById("pending").textContent = allRecords.filter(r => !r.status).length;
 
-    loadSummaryReport();
+      const freq = {};
+      allRecords.forEach(r => {
+        freq[r.item] = (freq[r.item] || 0) + 1;
+      });
+
+      const topItems = Object.entries(freq).sort((a,b) => b[1]-a[1]).slice(0,3);
+      document.getElementById("topItems").innerHTML = topItems.map(([item, count]) => `<li>${item} (${count})</li>`).join("");
+    }
+
+    function loadProjectList() {
+      const select = document.getElementById("projectSelect");
+      const keys = Object.keys(localStorage).filter(k => k.includes("_"));
+      const projects = [...new Set(keys.map(k => k.split("_")[0]))];
+
+      select.innerHTML = `<option value="">-- ทั้งหมด --</option>` +
+        projects.map(p => `<option value="${p}">${p}</option>`).join("");
+
+      loadSummaryReport(); // โหลดเริ่มต้น
+    }
+
+    window.onload = loadProjectList;
   </script>
 </body>
 </html>
-
