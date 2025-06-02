@@ -1,85 +1,80 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>รายละเอียดแปลง</title>
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รายละเอียดการตรวจงาน</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .page-break { page-break-after: always; }
+    .signature { display: flex; justify-content: space-between; margin-top: 40px; }
+    .signature div { width: 40%; text-align: center; }
+    .record-box { border: 1px solid #aaa; padding: 10px; margin: 10px 0; }
+  </style>
 </head>
 <body>
   <header>
     <h1>รายละเอียดการตรวจงาน</h1>
-    <p>โครงการ: <span id="detailProject"></span> | แปลง: <span id="detailPlot"></span></p>
+    <p>ผู้ใช้งาน: <span id="displayUser"></span></p>
+    <p>โครงการ: <span id="projectName"></span> | แปลง: <span id="plotName"></span></p>
   </header>
 
-  <main>
-    <div id="detailContainer">
-      <!-- รายการตรวจงานทั้งหมดจะแสดงที่นี่ -->
-    </div>
+  <main id="detailContainer"></main>
 
-    <section style="margin-top: 40px;">
-      <div style="display: flex; justify-content: space-between; margin-top: 50px;">
-        <div>
-          <p>ผู้ควบคุมงาน</p>
-          <div style="border-bottom: 1px solid black; width: 200px;"></div>
-        </div>
-        <div>
-          <p>ผู้จัดการโครงการ</p>
-          <div style="border-bottom: 1px solid black; width: 200px;"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="buttons">
-      <button onclick="window.print()">พิมพ์รายงาน</button>
-      <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
-    </section>
-  </main>
+  <section class="buttons">
+    <button onclick="window.print()">พิมพ์รายงาน</button>
+    <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
+  </section>
 
   <script src="app.js"></script>
   <script>
-    function loadDetails() {
-      const urlParams = new URLSearchParams(window.location.search);
-      const project = urlParams.get('project');
-      const plot = urlParams.get('plot');
+    const user = getUser();
+    document.getElementById("displayUser").textContent = user;
 
-      document.getElementById("detailProject").textContent = project;
-      document.getElementById("detailPlot").textContent = plot;
+    const project = localStorage.getItem("selected_project") || "";
+    const plot = localStorage.getItem("selected_plot") || "";
+    document.getElementById("projectName").textContent = project;
+    document.getElementById("plotName").textContent = plot;
 
-      const key = `${project}_${plot}`;
-      const records = JSON.parse(localStorage.getItem(key)) || [];
+    const key = `${project}_${plot}`;
+    const records = JSON.parse(localStorage.getItem(key) || "[]");
+    const container = document.getElementById("detailContainer");
 
-      const container = document.getElementById("detailContainer");
-      container.innerHTML = "";
+    let pageCount = 0;
+    for (let i = 0; i < records.length; i += 5) {
+      const group = records.slice(i, i + 5);
+      const page = document.createElement("div");
 
-      if (records.length === 0) {
-        container.innerHTML = "<p>ไม่พบข้อมูล</p>";
-        return;
-      }
-
-      records.forEach((rec, i) => {
-        const block = document.createElement("div");
-        block.classList.add("record-block");
-
-        block.innerHTML = `
-          <h3>รายการที่ ${i + 1}</h3>
-          <p><strong>วันที่เริ่ม:</strong> ${rec.startDate} | <strong>วันที่เสร็จ:</strong> ${rec.endDate}</p>
-          <p><strong>รายละเอียด:</strong> ${rec.item}</p>
-          <p><strong>สถานะ:</strong> ${rec.status}</p>
-          <div class="image-row">
-            <div><img src="${rec.before1}" alt="before1"/><p>ก่อนทำ 1</p></div>
-            <div><img src="${rec.before2}" alt="before2"/><p>ก่อนทำ 2</p></div>
-            <div><img src="${rec.after1}" alt="after1"/><p>หลังทำ 1</p></div>
-            <div><img src="${rec.after2}" alt="after2"/><p>หลังทำ 2</p></div>
+      group.forEach((r, index) => {
+        const box = document.createElement("div");
+        box.className = "record-box";
+        box.innerHTML = `
+          <h3>รายการที่ ${i + index + 1}</h3>
+          <p>วันที่: ${r.startDate} - ${r.endDate}</p>
+          <p>รายละเอียด: ${r.item}</p>
+          <p>สถานะ: ${r.status}</p>
+          <div style="display: flex; flex-wrap: wrap;">
+            <div style="width: 50%;"><p>ก่อนทำ 1:</p><img src="${r.before1}" width="100%"></div>
+            <div style="width: 50%;"><p>ก่อนทำ 2:</p><img src="${r.before2}" width="100%"></div>
+            <div style="width: 50%;"><p>หลังทำ 1:</p><img src="${r.after1}" width="100%"></div>
+            <div style="width: 50%;"><p>หลังทำ 2:</p><img src="${r.after2}" width="100%"></div>
           </div>
         `;
-
-        container.appendChild(block);
+        page.appendChild(box);
       });
-    }
 
-    window.onload = loadDetails;
+      // ส่วนเซ็นชื่อ
+      const sign = document.createElement("div");
+      sign.className = "signature";
+      sign.innerHTML = `
+        <div>ลงชื่อผู้ควบคุมงาน<br/><br/>__________________________</div>
+        <div>ลงชื่อผู้จัดการโครงการ<br/><br/>__________________________</div>
+      `;
+      page.appendChild(sign);
+
+      page.className = "page-break";
+      container.appendChild(page);
+    }
   </script>
 </body>
 </html>
-
