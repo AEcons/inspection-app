@@ -1,94 +1,94 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>เข้าสู่ระบบ</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css"/>
 </head>
 <body>
   <main class="login-container">
     <h1>เข้าสู่ระบบ</h1>
 
-    <label>ชื่อผู้ใช้งานเดิม
-      <select id="usernameSelect">
-        <option value="">-- เลือกชื่อ --</option>
-      </select>
-    </label>
+    <label for="savedUser">บัญชีที่เคยใช้:</label>
+    <select id="savedUser"></select>
 
-    <label>หรือกรอกชื่อใหม่
-      <input type="text" id="newUsername" placeholder="ชื่อผู้ใช้งานใหม่">
-    </label>
+    <label for="username">ชื่อผู้ใช้งานใหม่:</label>
+    <input type="text" id="username" placeholder="พิมพ์ชื่อใหม่ที่นี่"/>
 
-    <button onclick="login()">เข้าสู่ระบบ</button>
-    <button onclick="changeUsername()">เปลี่ยนชื่อ</button>
-    <button onclick="deleteUser()">ลบบัญชี</button>
+    <div class="buttons">
+      <button onclick="signIn()">เข้าสู่ระบบ</button>
+      <button onclick="changeUser()">เปลี่ยนชื่อ (ใส่รหัสก่อน)</button>
+      <button onclick="deleteUser()">ลบบัญชี</button>
+    </div>
   </main>
 
   <script>
-    const USER_KEY = "username";
-    const USER_LIST_KEY = "userList";
+    const password = "211421";
 
-    function loadUserList() {
-      const users = JSON.parse(localStorage.getItem(USER_LIST_KEY)) || [];
-      const select = document.getElementById("usernameSelect");
-      select.innerHTML = '<option value="">-- เลือกชื่อ --</option>';
-      users.forEach(user => {
-        const opt = document.createElement("option");
-        opt.value = user;
-        opt.textContent = user;
-        select.appendChild(opt);
-      });
+    function getSavedUsers() {
+      return JSON.parse(localStorage.getItem("userList") || "[]");
     }
 
-    function login() {
-      const selected = document.getElementById("usernameSelect").value;
-      const newName = document.getElementById("newUsername").value;
-      const name = selected || newName;
-      if (!name) return alert("กรุณาระบุชื่อ");
-
-      saveUser(name);
-      location.href = "index.html";
+    function saveUserList(users) {
+      localStorage.setItem("userList", JSON.stringify(users));
     }
 
-    function saveUser(name) {
-      localStorage.setItem(USER_KEY, name);
+    function updateDropdown() {
+      const dropdown = document.getElementById("savedUser");
+      const users = getSavedUsers();
+      dropdown.innerHTML = `<option value="">เลือกบัญชี</option>` +
+        users.map(u => `<option value="${u}">${u}</option>`).join("");
+    }
 
-      const users = JSON.parse(localStorage.getItem(USER_LIST_KEY)) || [];
+    function signIn() {
+      const name = document.getElementById("username").value || document.getElementById("savedUser").value;
+      if (!name) return alert("กรุณาเลือกหรือกรอกชื่อผู้ใช้งาน");
+      localStorage.setItem("username", name);
+
+      const users = getSavedUsers();
       if (!users.includes(name)) {
         users.push(name);
-        localStorage.setItem(USER_LIST_KEY, JSON.stringify(users));
+        saveUserList(users);
       }
+      window.location.href = "index.html";
     }
 
-    function changeUsername() {
-      const newName = prompt("กรอกชื่อใหม่:");
-      if (!newName) return;
+    function changeUser() {
+      const newName = document.getElementById("username").value;
+      if (!newName) return alert("กรอกชื่อใหม่ก่อน");
 
-      const pass = prompt("กรอกรหัสเพื่อเปลี่ยนชื่อ:");
-      if (pass !== "211421") return alert("รหัสไม่ถูกต้อง");
+      const pass = prompt("กรอกรหัสเพื่อเปลี่ยนชื่อ");
+      if (pass !== password) return alert("รหัสไม่ถูกต้อง");
 
-      saveUser(newName);
-      alert("เปลี่ยนชื่อเรียบร้อย");
-      location.reload();
+      localStorage.setItem("username", newName);
+
+      const users = getSavedUsers();
+      if (!users.includes(newName)) {
+        users.push(newName);
+        saveUserList(users);
+      }
+
+      alert("เปลี่ยนชื่อสำเร็จ");
+      updateDropdown();
     }
 
     function deleteUser() {
-      const pass = prompt("กรอกรหัสเพื่อยืนยันการลบ:");
-      if (pass !== "211421") return alert("รหัสไม่ถูกต้อง");
+      const selected = document.getElementById("savedUser").value;
+      if (!selected) return alert("เลือกบัญชีที่จะลบก่อน");
 
-      const current = localStorage.getItem(USER_KEY);
-      localStorage.removeItem(USER_KEY);
+      const pass = prompt("กรอกรหัสเพื่อลบบัญชี");
+      if (pass !== password) return alert("รหัสไม่ถูกต้อง");
 
-      let users = JSON.parse(localStorage.getItem(USER_LIST_KEY)) || [];
-      users = users.filter(u => u !== current);
-      localStorage.setItem(USER_LIST_KEY, JSON.stringify(users));
-      alert("ลบชื่อแล้ว");
-      location.reload();
+      const users = getSavedUsers().filter(u => u !== selected);
+      saveUserList(users);
+      localStorage.removeItem("username");
+
+      alert("ลบบัญชีแล้ว");
+      updateDropdown();
     }
 
-    window.onload = loadUserList;
+    updateDropdown();
   </script>
 </body>
 </html>
-
