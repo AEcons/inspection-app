@@ -76,6 +76,7 @@
 
   <script src="app.js"></script>
   <script>
+    // แสดงชื่อผู้ใช้งาน
     document.getElementById("displayUser").textContent = getUser();
 
     function previewImage(input, imgId) {
@@ -87,7 +88,14 @@
     }
 
     function populateDropdowns() {
-      const records = JSON.parse(localStorage.getItem("records") || "[]");
+      const records = [];
+      for (let key in localStorage) {
+        if (key.includes("_")) {
+          const r = JSON.parse(localStorage.getItem(key) || "[]");
+          records.push(...r);
+        }
+      }
+
       const projects = [...new Set(records.map(r => r.project))];
       const projectSelect = document.getElementById("projectDropdown");
       projectSelect.innerHTML = '<option value="">-- เลือกโครงการ --</option>';
@@ -98,21 +106,26 @@
         projectSelect.appendChild(opt);
       });
 
-      const lastRecord = records[records.length - 1];
-      if (lastRecord) {
-        document.getElementById("project").value = lastRecord.project;
-        document.getElementById("plot").value = lastRecord.plot;
+      const last = records[records.length - 1];
+      if (last) {
+        document.getElementById("project").value = last.project;
+        document.getElementById("plot").value = last.plot;
         onProjectChange();
         loadRecord();
       }
     }
 
     function onProjectChange() {
-      const selectedProject = document.getElementById("projectDropdown").value || document.getElementById("project").value;
-      document.getElementById("project").value = selectedProject;
+      const selected = document.getElementById("projectDropdown").value || document.getElementById("project").value;
+      document.getElementById("project").value = selected;
 
-      const records = JSON.parse(localStorage.getItem("records") || "[]");
-      const plots = [...new Set(records.filter(r => r.project === selectedProject).map(r => r.plot))];
+      const plots = [];
+      for (let key in localStorage) {
+        if (key.startsWith(selected + "_")) {
+          const plot = key.split("_")[1];
+          plots.push(plot);
+        }
+      }
       const plotSelect = document.getElementById("plotDropdown");
       plotSelect.innerHTML = '<option value="">-- เลือกแปลง --</option>';
       plots.forEach(p => {
