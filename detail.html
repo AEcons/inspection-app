@@ -3,78 +3,62 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>รายละเอียดการตรวจงาน</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    .page-break { page-break-after: always; }
-    .signature { display: flex; justify-content: space-between; margin-top: 40px; }
-    .signature div { width: 40%; text-align: center; }
-    .record-box { border: 1px solid #aaa; padding: 10px; margin: 10px 0; }
-  </style>
+  <title>รายละเอียดแปลง</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
     <h1>รายละเอียดการตรวจงาน</h1>
     <p>ผู้ใช้งาน: <span id="displayUser"></span></p>
-    <p>โครงการ: <span id="projectName"></span> | แปลง: <span id="plotName"></span></p>
   </header>
 
-  <main id="detailContainer"></main>
+  <main>
+    <h2 id="projectPlot"></h2>
+    <div id="recordsContainer"></div>
 
-  <section class="buttons">
-    <button onclick="window.print()">พิมพ์รายงาน</button>
-    <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
-  </section>
+    <div class="signature-area">
+      <div class="left-sign">ผู้ควบคุมงาน<br><br><br>......................</div>
+      <div class="right-sign">ผู้จัดการโครงการ<br><br><br>......................</div>
+    </div>
+
+    <div class="buttons">
+      <button onclick="print()">พิมพ์รายงาน</button>
+      <button onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
+    </div>
+  </main>
 
   <script src="app.js"></script>
   <script>
-    const user = getUser();
-    document.getElementById("displayUser").textContent = user;
+    document.getElementById("displayUser").textContent = getUser();
 
-    const project = localStorage.getItem("selected_project") || "";
-    const plot = localStorage.getItem("selected_plot") || "";
-    document.getElementById("projectName").textContent = project;
-    document.getElementById("plotName").textContent = plot;
-
+    const project = localStorage.getItem("selectedProject") || "";
+    const plot = localStorage.getItem("selectedPlot") || "";
     const key = `${project}_${plot}`;
     const records = JSON.parse(localStorage.getItem(key) || "[]");
-    const container = document.getElementById("detailContainer");
 
-    let pageCount = 0;
-    for (let i = 0; i < records.length; i += 5) {
-      const group = records.slice(i, i + 5);
-      const page = document.createElement("div");
+    document.getElementById("projectPlot").textContent = `โครงการ: ${project} | เลขแปลง: ${plot}`;
 
-      group.forEach((r, index) => {
-        const box = document.createElement("div");
-        box.className = "record-box";
-        box.innerHTML = `
-          <h3>รายการที่ ${i + index + 1}</h3>
-          <p>วันที่: ${r.startDate} - ${r.endDate}</p>
-          <p>รายละเอียด: ${r.item}</p>
-          <p>สถานะ: ${r.status}</p>
-          <div style="display: flex; flex-wrap: wrap;">
-            <div style="width: 50%;"><p>ก่อนทำ 1:</p><img src="${r.before1}" width="100%"></div>
-            <div style="width: 50%;"><p>ก่อนทำ 2:</p><img src="${r.before2}" width="100%"></div>
-            <div style="width: 50%;"><p>หลังทำ 1:</p><img src="${r.after1}" width="100%"></div>
-            <div style="width: 50%;"><p>หลังทำ 2:</p><img src="${r.after2}" width="100%"></div>
-          </div>
-        `;
-        page.appendChild(box);
-      });
+    const container = document.getElementById("recordsContainer");
 
-      // ส่วนเซ็นชื่อ
-      const sign = document.createElement("div");
-      sign.className = "signature";
-      sign.innerHTML = `
-        <div>ลงชื่อผู้ควบคุมงาน<br/><br/>__________________________</div>
-        <div>ลงชื่อผู้จัดการโครงการ<br/><br/>__________________________</div>
+    records.forEach((r, i) => {
+      const div = document.createElement("div");
+      div.className = "record-page";
+      div.innerHTML = `
+        <h3>รายการที่ ${i + 1}</h3>
+        <p>วันที่ตรวจเริ่ม: ${r.startDate} ถึง ${r.endDate}</p>
+        <p>รายการ: ${r.item}</p>
+        <p>สถานะ: ${r.status}</p>
+        <div class="photos">
+          <img src="${r.before1}" alt="ก่อนทำ 1">
+          <img src="${r.before2}" alt="ก่อนทำ 2">
+          <img src="${r.after1}" alt="หลังทำ 1">
+          <img src="${r.after2}" alt="หลังทำ 2">
+        </div>
+        <hr/>
       `;
-      page.appendChild(sign);
-
-      page.className = "page-break";
-      container.appendChild(page);
-    }
+      container.appendChild(div);
+    });
   </script>
 </body>
 </html>
+
