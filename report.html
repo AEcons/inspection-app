@@ -1,29 +1,29 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>รายงาน</title>
-  <link rel="stylesheet" href="style.css"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รายงานแยกโครงการ</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <header>
-    <h1>รายงานโครงการ</h1>
+    <h1>รายงานแยกตามโครงการ</h1>
     <p>ผู้ใช้งาน: <span id="displayUser"></span></p>
   </header>
 
   <main>
-    <label>เลือกโครงการ
-      <select id="projectSelect" onchange="loadReport()"></select>
+    <label for="projectSelect">เลือกโครงการ:
+      <select id="projectSelect" onchange="loadReportList()"></select>
     </label>
 
     <table>
       <thead>
         <tr>
-          <th>ชื่อโครงการ</th>
+          <th>โครงการ</th>
           <th>เลขแปลง</th>
-          <th>สถานะ</th>
-          <th>จำนวนรายการ</th>
+          <th>สถานะล่าสุด</th>
+          <th>รายการล่าสุด</th>
           <th>ดูรายละเอียด</th>
         </tr>
       </thead>
@@ -37,44 +37,43 @@
   <script>
     document.getElementById("displayUser").textContent = getUser();
 
-    function loadProjectList() {
-      const select = document.getElementById("projectSelect");
+    function populateProjectSelect() {
       const keys = Object.keys(localStorage).filter(k => k.includes("_"));
       const projects = [...new Set(keys.map(k => k.split("_")[0]))];
-
-      select.innerHTML = '<option value="">-- เลือกโครงการ --</option>' +
+      const select = document.getElementById("projectSelect");
+      select.innerHTML = `<option value="">-- เลือกโครงการ --</option>` +
         projects.map(p => `<option value="${p}">${p}</option>`).join("");
     }
 
-    function loadReport() {
+    function loadReportList() {
       const project = document.getElementById("projectSelect").value;
       const table = document.getElementById("reportTable");
       table.innerHTML = "";
 
       const keys = Object.keys(localStorage).filter(k => k.startsWith(project + "_"));
       keys.forEach(k => {
+        const records = JSON.parse(localStorage.getItem(k));
+        const last = records[records.length - 1];
         const plot = k.split("_")[1];
-        const records = JSON.parse(localStorage.getItem(k) || "[]");
-        const status = records.length ? records[records.length - 1].status : "-";
         const row = `
           <tr>
-            <td>${project}</td>
+            <td>${last.project}</td>
             <td>${plot}</td>
-            <td>${status}</td>
-            <td>${records.length}</td>
-            <td><button onclick="goDetail('${project}','${plot}')">ดูรายละเอียด</button></td>
+            <td>${last.status}</td>
+            <td>${last.item}</td>
+            <td><button onclick="goToDetail('${last.project}', '${plot}')">ดู</button></td>
           </tr>`;
         table.innerHTML += row;
       });
     }
 
-    function goDetail(project, plot) {
-      localStorage.setItem("selected_project", project);
-      localStorage.setItem("selected_plot", plot);
+    function goToDetail(project, plot) {
+      localStorage.setItem("selectedProject", project);
+      localStorage.setItem("selectedPlot", plot);
       window.location.href = "detail.html";
     }
 
-    window.onload = loadProjectList;
+    populateProjectSelect();
   </script>
 </body>
 </html>
